@@ -7,15 +7,21 @@ COPY requirements.txt /mnt/
 RUN /usr/share/python3/ybs_task/bin/pip install -Ur /mnt/requirements.txt
 
 COPY dist/ /mnt/dist/
-RUN /usr/share/python3/ybs_task/bin/pip install /mnt/dist/* --target /usr/share/python3/ybs_task/ybs_task \
+
+# install my app at the known place
+RUN /usr/share/python3/ybs_task/bin/pip install /mnt/dist/* \ 
+    --target /usr/share/python3/ybs_task/ybs_task \
     && /usr/share/python3/ybs_task/bin/pip check
+
 
 FROM snakepacker/python:3.8 as api
 
 COPY --from=builder /usr/share/python3/ybs_task /usr/share/python3/ybs_task
 
-#RUN ln -snf /usr/share/python3/ybs_task/bin/analyzer-* /usr/local/bin/
-
+# make my app visible for django
 ENV PYTHONPATH "${PYTHONPATH}:/usr/share/python3/ybs_task/ybs_task"
 
-CMD ["/usr/share/python3/ybs_task/bin/python3.8", "/usr/share/python3/ybs_task/ybs_task/bin/manage.py", "runserver", "0.0.0.0:8000"]
+# run django server on '0.0.0.0:8000'
+CMD ["/usr/share/python3/ybs_task/bin/python3.8", \
+     "/usr/share/python3/ybs_task/ybs_task/bin/manage.py",  \
+     "runserver", "0.0.0.0:8000"]
