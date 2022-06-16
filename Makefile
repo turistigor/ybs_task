@@ -18,7 +18,7 @@ docker: sdist
 	docker build --target=api -t $(PROJECT_NAME):$(VERSION) .
 
 run: docker
-	docker run -p 8000:8000 $(PROJECT_NAME):$(VERSION)
+	docker run -it -p 8000:8000 $(PROJECT_NAME):$(VERSION)
 
 upload: docker
 	docker tag $(PROJECT_NAME):$(VERSION) $(PROJECT_NAME):latest
