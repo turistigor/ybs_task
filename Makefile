@@ -6,6 +6,7 @@ clean:
 	rm -fr *.egg-info dist
 	rm -r draft
 	mkdir draft
+	docker system prune
 
 sdist: clean
 	python3 setup.py sdist
@@ -17,7 +18,7 @@ docker: sdist
 	docker build --target=api -t $(PROJECT_NAME):$(VERSION) .
 
 run: docker
-	docker run -it -p 8000:8000 -e DJANGO_SUPERUSER_USERNAME=admin -e DJANGO_SUPERUSER_PASSWORD=sekret1 -e DJANGO_SUPERUSER_EMAIL=admin@example.com $(PROJECT_NAME):$(VERSION)
+	docker run -p 8000:8000 $(PROJECT_NAME):$(VERSION)
 
 upload: docker
 	docker tag $(PROJECT_NAME):$(VERSION) $(PROJECT_NAME):latest
