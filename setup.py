@@ -1,4 +1,16 @@
 from setuptools import find_packages, setup
+from pkg_resources import parse_requirements
+
+
+def load_requirements(fname: str) -> list:
+    requirements = []
+    with open(fname, 'r') as fp:
+        for req in parse_requirements(fp.read()):
+            extras = '[{}]'.format(','.join(req.extras)) if req.extras else ''
+            requirements.append(
+                '{}{}{}'.format(req.name, extras, req.specifier)
+            )
+    return requirements
 
 
 setup(
@@ -8,5 +20,6 @@ setup(
     author_email='igor_m_87@mail.ru',
     description='Yandex Backend School task',
     packages=find_packages(),
-    install_requires=['django==4.0.5']
+    install_requires=load_requirements('requirements.txt'),
+    scripts=['manage.py']
 )
