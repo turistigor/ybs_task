@@ -11,9 +11,11 @@ class ImportTest(TestCase):
             'id': '3fa85f64-5717-4562-b3fc-2c963f66a444',
             'name': 'Оффер',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'type': 'OFFER',
             'price': 234,
-            'type': 'OFFER'
         }
+
+        cls.normal_update_date = '2022-05-28T21:12:01.000Z'
 
         cls._validation_failed = {
             "code": 400,
@@ -26,50 +28,142 @@ class ImportTest(TestCase):
         return http.post(url=self._imports_url, 
                          data=json.dumps(data))
 
-    def test_updateDate(self):
-        # request without field
-        data = {'items':[self.normal_item]}
-        resp = self._send(data)
-
+    def check_validation_failed(self, resp):
         self.assertEqual(resp.status_code, 400)
         self.assertDictEqual(
             json.loads(resp.content.decode()), self._validation_failed
         )
 
-        # valid date from example"
-        data = {'items':[self.normal_item], 'updateDate': '2022-05-28T21:12:01.000Z'}
+    def test_updateDate(self):
+        # request without field
+        data = {'items':[self.normal_item]}
         resp = self._send(data)
+        self.check_validation_failed(resp)
+        
 
+        # valid date from example"
+        data = {'items':[self.normal_item], 'updateDate': self.normal_update_date}
+        resp = self._send(data)
         self.assertEqual(resp.status_code, 200)
 
         # incorrect value"
         data = {'items':[self.normal_item], 'updateDate': 'asdasd2wef'}
         resp = self._send(data)
-
-        self.assertEqual(resp.status_code, 400)
-        self.assertDictEqual(
-            json.loads(resp.content.decode()), self._validation_failed
-        )
+        self.check_validation_failed(resp)
 
         # empty value
         data = {'items':[self.normal_item], 'updateDate': ''}
         resp = self._send(data)
+        self.check_validation_failed(resp)
 
-        self.assertEqual(resp.status_code, 400)
-        self.assertDictEqual(
-            json.loads(resp.content.decode()), self._validation_failed
-        )
+        # None value
+        data = {'items':[self.normal_item], 'updateDate': None}
+        resp = self._send(data)
+        self.check_validation_failed(resp)
 
         # short date-time format
         data = {'items':[self.normal_item], 'updateDate': '2006-10-25 14:30'}
         resp = self._send(data)
-
         self.assertEqual(resp.status_code, 200)
 
         # date-time with offset
         data = {'items':[self.normal_item], 'updateDate': '2006-10-25T14:30+02:00'}
         resp = self._send(data)
-
         self.assertEqual(resp.status_code, 200)
 
+    def test_items(self):
+        # request without field
+        data = {'updateDate': self.normal_update_date}
+        resp = self._send(data)
+        self.check_validation_failed(resp)
 
+    def test_item_id(self):
+        # request without field
+        data = {'updateDate': self.normal_update_date, 'items': [{
+            'name': 'Оффер',
+            'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'type': 'OFFER',
+            'price': 234,
+        },]}
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # id is normal
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.assertEqual(resp.status_code, 200)
+
+        # id is not valid uuid
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': 'asdew83rnf c',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # id is empty
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': '',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # id is None
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': None,
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # there are two identical id
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': self.normal_item['id'],
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
