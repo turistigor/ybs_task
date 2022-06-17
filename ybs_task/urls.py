@@ -16,6 +16,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from prices_comparator.views import PricesComparatorView
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('imports', PricesComparatorView.as_view(), name='imports')
 ]
