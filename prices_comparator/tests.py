@@ -36,10 +36,40 @@ class ImportTest(TestCase):
             json.loads(resp.content.decode()), self._validation_failed
         )
 
-        # from example: "2022-05-28T21:12:01.000Z"
-        # incorrect: "cwlef,l"
-        # empty: ""
-        # '2006-10-25 14:30'
-        # '2006-10-25T14:30+02:00'
+        # valid date from example"
+        data = {'items':[self.normal_item], 'updateDate': '2022-05-28T21:12:01.000Z'}
+        resp = self._send(data)
+
+        self.assertEqual(resp.status_code, 200)
+
+        # incorrect value"
+        data = {'items':[self.normal_item], 'updateDate': 'asdasd2wef'}
+        resp = self._send(data)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertDictEqual(
+            json.loads(resp.content.decode()), self._validation_failed
+        )
+
+        # empty value
+        data = {'items':[self.normal_item], 'updateDate': ''}
+        resp = self._send(data)
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertDictEqual(
+            json.loads(resp.content.decode()), self._validation_failed
+        )
+
+        # short date-time format
+        data = {'items':[self.normal_item], 'updateDate': '2006-10-25 14:30'}
+        resp = self._send(data)
+
+        self.assertEqual(resp.status_code, 200)
+
+        # date-time with offset
+        data = {'items':[self.normal_item], 'updateDate': '2006-10-25T14:30+02:00'}
+        resp = self._send(data)
+
+        self.assertEqual(resp.status_code, 200)
 
 
