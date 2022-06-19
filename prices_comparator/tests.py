@@ -89,7 +89,7 @@ class ImportTest(TestCase):
                     'id': 'asdew83rnf c',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -105,7 +105,7 @@ class ImportTest(TestCase):
                     'id': '',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -121,7 +121,7 @@ class ImportTest(TestCase):
                     'id': None,
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -137,7 +137,7 @@ class ImportTest(TestCase):
                     'id': self.normal_item['id'],
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -154,7 +154,7 @@ class ImportTest(TestCase):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': 'asdew83rnf c',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -181,7 +181,7 @@ class ImportTest(TestCase):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 201*'a',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -197,7 +197,7 @@ class ImportTest(TestCase):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': '',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -213,7 +213,7 @@ class ImportTest(TestCase):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': None,
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 100,
                 },
                 self.normal_item
@@ -221,22 +221,6 @@ class ImportTest(TestCase):
         }
         resp = self._send(data)
         self.check_validation_failed(resp)
-
-    def test_all_fields_correct(self):
-        data = {
-            'updateDate': self.normal_update_date, 
-            'items': [{
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
-                    'price': 100,
-                },
-                self.normal_item
-            ]
-        }
-        resp = self._send(data)
-        self.assertEqual(resp.status_code, 200)
 
     def test_type(self):
         # request without field
@@ -296,3 +280,112 @@ class ImportTest(TestCase):
         }
         resp = self._send(data)
         self.check_validation_failed(resp)
+
+    def test_price(self):
+        # price is nan
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 'sd',
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # price is negative
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'OFFER',
+                    'price': -3,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # price is None for offer
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'OFFER',
+                    'price': None,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # price is empty for offer
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'OFFER',
+                    'price': '',
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # price is not null for category
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 11,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+    def test_all_fields_correct(self):
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [
+                {
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a332',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY'
+                }, {
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a334',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': None
+                }, {
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a335',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'OFFER',
+                    'price': 0
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.assertEqual(resp.status_code, 200)

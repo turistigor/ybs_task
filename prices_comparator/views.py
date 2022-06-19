@@ -13,7 +13,20 @@ class ImportItemForm(forms.Form):
     type = forms.ChoiceField(
         choices=(('OFFER', 'OFFER'), ('CATEGORY', 'CATEGORY'))
     )
-    price = forms.IntegerField(min_value=0)
+    price = forms.IntegerField(min_value=0, required=False)
+
+    def clean(self):
+        item_type = self.cleaned_data.get('type', None)
+        price = self.cleaned_data.get('price', None)
+
+        if item_type == 'CATEGORY':
+            if isinstance(price, int):
+                raise ValidationError(message='price for category isn\'t null')
+        elif item_type == 'OFFER':
+            if not isinstance(price, int) or price < 0:
+                raise ValidationError(message='price for category isn\'t null')
+
+        return super().clean()
 
 
 class ListField(forms.MultipleChoiceField):
@@ -32,7 +45,9 @@ class ListField(forms.MultipleChoiceField):
 
     def validate(self, value):
         if self.required and not value:
-            raise ValidationError(self.error_messages["required"], code="required")
+            raise ValidationError(
+                self.error_messages["required"], code="required"
+            )
 
         ids = set()
 
