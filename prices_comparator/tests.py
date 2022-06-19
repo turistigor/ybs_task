@@ -190,7 +190,7 @@ class ImportTest(TestCase):
         resp = self._send(data)
         self.check_validation_failed(resp)
 
-        # id is empty
+        # name is empty
         data = {
             'updateDate': self.normal_update_date,
             'items': [{
@@ -206,7 +206,7 @@ class ImportTest(TestCase):
         resp = self._send(data)
         self.check_validation_failed(resp)
 
-        # id is None
+        # name is None
         data = {
             'updateDate': self.normal_update_date,
             'items': [{
