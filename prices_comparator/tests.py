@@ -84,14 +84,14 @@ class ImportTest(TestCase):
 
         # id is not valid uuid
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': self.normal_update_date,
             'items': [{
                     'id': 'asdew83rnf c',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'type': 'CATEGORY',
                     'price': 100,
-                }, 
+                },
                 self.normal_item
             ]
         }
@@ -100,14 +100,14 @@ class ImportTest(TestCase):
 
         # id is empty
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': self.normal_update_date,
             'items': [{
                     'id': '',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'type': 'CATEGORY',
                     'price': 100,
-                }, 
+                },
                 self.normal_item
             ]
         }
@@ -116,14 +116,14 @@ class ImportTest(TestCase):
 
         # id is None
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': self.normal_update_date,
             'items': [{
                     'id': None,
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'type': 'CATEGORY',
                     'price': 100,
-                }, 
+                },
                 self.normal_item
             ]
         }
@@ -139,7 +139,7 @@ class ImportTest(TestCase):
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'type': 'CATEGORY',
                     'price': 100,
-                }, 
+                },
                 self.normal_item
             ]
         }
@@ -237,3 +237,62 @@ class ImportTest(TestCase):
         }
         resp = self._send(data)
         self.assertEqual(resp.status_code, 200)
+
+    def test_type(self):
+        # request without field
+        data = {'updateDate': self.normal_update_date, 'items': [{
+            'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'name': 'Оффер',
+            'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'price': 234,
+        },]}
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # type is not valid
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': ';wlmf;klw',
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # type is empty
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': '',
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # type is None
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': None,
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
