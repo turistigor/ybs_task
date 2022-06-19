@@ -39,12 +39,6 @@ class ImportTest(TestCase):
         data = {'items':[self.normal_item]}
         resp = self._send(data)
         self.check_validation_failed(resp)
-        
-
-        # valid date from example"
-        data = {'items':[self.normal_item], 'updateDate': self.normal_update_date}
-        resp = self._send(data)
-        self.assertEqual(resp.status_code, 200)
 
         # incorrect value"
         data = {'items':[self.normal_item], 'updateDate': 'asdasd2wef'}
@@ -87,22 +81,6 @@ class ImportTest(TestCase):
         },]}
         resp = self._send(data)
         self.check_validation_failed(resp)
-
-        # id is normal
-        data = {
-            'updateDate': self.normal_update_date, 
-            'items': [{
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
-                    'price': 100,
-                }, 
-                self.normal_item
-            ]
-        }
-        resp = self._send(data)
-        self.assertEqual(resp.status_code, 200)
 
         # id is not valid uuid
         data = {
@@ -169,22 +147,6 @@ class ImportTest(TestCase):
         self.check_validation_failed(resp)
 
     def test_parent_id(self):
-        # parentId is normal
-        data = {
-            'updateDate': self.normal_update_date,
-            'items': [{
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
-                    'price': 100,
-                },
-                self.normal_item
-            ]
-        }
-        resp = self._send(data)
-        self.assertEqual(resp.status_code, 200)
-
         # parentId is not valid uuid
         data = {
             'updateDate': self.normal_update_date, 
@@ -200,3 +162,19 @@ class ImportTest(TestCase):
         }
         resp = self._send(data)
         self.check_validation_failed(resp)
+
+    def test_all_fields_correct(self):
+        data = {
+            'updateDate': self.normal_update_date, 
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                }, 
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.assertEqual(resp.status_code, 200)
