@@ -8,7 +8,7 @@ import json
 
 class ImportItemForm(forms.Form):
     id = forms.UUIDField()
-    name = forms.CharField()
+    name = forms.CharField(max_length=200)
     parentId = forms.UUIDField()
     type = forms.ChoiceField(
         choices=(('OFFER', 'OFFER'), ('CATEGORY', 'CATEGORY'))

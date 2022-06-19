@@ -163,6 +163,65 @@ class ImportTest(TestCase):
         resp = self._send(data)
         self.check_validation_failed(resp)
 
+    def test_name(self):
+        # request without field
+        data = {'updateDate': self.normal_update_date, 'items': [{
+            'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+            'type': 'OFFER',
+            'price': 234,
+        },]}
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # name is to long
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 201*'a',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # id is empty
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': '',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
+        # id is None
+        data = {
+            'updateDate': self.normal_update_date,
+            'items': [{
+                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': None,
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'CATEGORY',
+                    'price': 100,
+                },
+                self.normal_item
+            ]
+        }
+        resp = self._send(data)
+        self.check_validation_failed(resp)
+
     def test_all_fields_correct(self):
         data = {
             'updateDate': self.normal_update_date, 
@@ -172,7 +231,7 @@ class ImportTest(TestCase):
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'type': 'CATEGORY',
                     'price': 100,
-                }, 
+                },
                 self.normal_item
             ]
         }
