@@ -85,3 +85,6 @@ class PricesComparatorView(View):
                 "code": 400,
                 "message": "Validation Failed"
             }))
+
+    def get(self, request):
+        return HttpResponse('It works!')
