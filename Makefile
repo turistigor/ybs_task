@@ -23,10 +23,16 @@ docker_clean:
 	docker system prune
 
 docker_run: docker_build
-	docker run -it -p 8000:8000 $(PROJECT_NAME):$(VERSION)
+	docker run -it -p 80:80 $(PROJECT_NAME):$(VERSION)
 
 docker_rerun: docker_rebuild docker_run
 
 docker_upload: docker_rebuild
 	docker tag $(PROJECT_NAME):$(VERSION) $(PROJECT_REGISTRY)/$(PROJECT_NAME):$(VERSION)
 	docker push $(PROJECT_REGISTRY)/$(PROJECT_NAME):$(VERSION)
+
+dc_up: dc_down local_sdist
+	docker-compose up -d --build
+
+dc_down: local_sdist
+	docker-compose down
