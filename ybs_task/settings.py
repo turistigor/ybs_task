@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'ybs_task.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('POSTGRES_DB', 'p_db'),
-        'USER': os.environ.get('POSTGRES_USER', 'p_user'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'p_password'),
-        'HOST': os.environ.get('DB_HOST', 'db'),
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
         'PORT': 5432
     }
 }
