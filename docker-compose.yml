@@ -11,9 +11,10 @@ services:
       - POSTGRES_PASSWORD=p_password
     ports: 
      - 5432:5432
-  app:
-    # restart: always
+  web:
     build: .
+    image: igorturist/ybs_task:0.1.0
+    # restart: always
     command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
     environment:
       - POSTGRES_DB=p_db
@@ -24,7 +25,3 @@ services:
       - 80:80
     depends_on:
       - db
-
-
-
-
