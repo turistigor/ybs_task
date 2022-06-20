@@ -21,7 +21,7 @@ COPY --from=builder /usr/share/python3/ybs_task /usr/share/python3/ybs_task
 # make my app visible for django
 ENV PYTHONPATH "${PYTHONPATH}:/usr/share/python3/ybs_task/ybs_task"
 
-# run django server on '0.0.0.0:8000'
+# run django server on '0.0.0.0:80'
 CMD ["/usr/share/python3/ybs_task/bin/python3.8", \
      "/usr/share/python3/ybs_task/ybs_task/bin/manage.py",  \
      "runserver", "0.0.0.0:80"]
