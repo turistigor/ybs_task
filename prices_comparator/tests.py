@@ -22,7 +22,7 @@ class ImportTest(TestCase):
             "message": "Validation Failed"
         }
 
-        cls._imports_url = 'http://127.0.0.1:8000/imports'
+        cls._imports_url = 'http://127.0.0.1:80/imports'
 
     def _send(self, data):
         return http.post(url=self._imports_url, 
