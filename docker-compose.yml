@@ -25,3 +25,14 @@ services:
       - 80:80
     depends_on:
       - db
+  test:
+    image: igorturist/ybs_task:0.1.0
+    command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
+    environment:
+      - POSTGRES_DB=p_db
+      - POSTGRES_USER=p_user
+      - POSTGRES_PASSWORD=p_password
+      - DB_HOST=db
+      - WEB_HOST=http://web
+    depends_on:
+      - web

@@ -34,5 +34,8 @@ docker_upload: docker_rebuild
 dc_up: dc_down local_sdist
 	docker-compose up -d --build
 
+dc_up_web: dc_down local_sdist
+	docker-compose up -d --build web
+
 dc_down:
 	docker-compose down

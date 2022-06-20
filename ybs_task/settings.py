@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-22y-!%9j4dj)pxq!%r59j3pwg)!v(e%*3ms=^_w_sn^_n98x(n
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1', 'localhost', '10.20.0.79', 'inkjet-1986.usr.yandex-academy.ru'
+    '127.0.0.1', 'localhost', '10.20.0.79', 'inkjet-1986.usr.yandex-academy.ru', 'web'
 ]
 
 

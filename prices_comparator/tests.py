@@ -2,6 +2,7 @@ from django.test import TestCase
 
 import requests as http
 import json
+import os
 
 
 class ImportTest(TestCase):
@@ -22,7 +23,8 @@ class ImportTest(TestCase):
             "message": "Validation Failed"
         }
 
-        cls._imports_url = 'http://127.0.0.1:80/imports'
+        host = os.environ.get('WEB_HOST', 'http://127.0.0.1:80')
+        cls._imports_url = f'{host}/imports'
 
     def _send(self, data):
         return http.post(url=self._imports_url, 
