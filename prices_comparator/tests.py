@@ -23,8 +23,9 @@ class ImportTest(TestCase):
             "message": "Validation Failed"
         }
 
-        host = os.environ.get('WEB_HOST', 'http://127.0.0.1:80')
-        cls._imports_url = f'{host}/imports'
+        host = os.environ.get('WEB_HOST', 'http://127.0.0.1')
+        port = os.environ.get('WEB_PORT', '80')
+        cls._imports_url = f'{host}:{port}/imports'
 
     def _send(self, data):
         return http.post(url=self._imports_url, 
