@@ -1,13 +1,15 @@
 import django.forms as forms
 from django.core.exceptions import ValidationError
 
+import prices_comparator.common as const
+
 
 class ImportItemForm(forms.Form):
     id = forms.UUIDField()
-    name = forms.CharField(max_length=200)
+    name = forms.CharField(max_length=const.IMPORT_UNIT_NAME_MAX_LENGTH)
     parentId = forms.UUIDField()
     type = forms.ChoiceField(
-        choices=(('OFFER', 'OFFER'), ('CATEGORY', 'CATEGORY'))
+        choices=const.IMPORT_UNIT_TYPE_CHOICES
     )
     price = forms.IntegerField(min_value=0, required=False)
 
