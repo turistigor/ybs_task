@@ -1,11 +1,38 @@
 from django.test import TestCase
+from django.utils.dateparse import parse_datetime
 
 import requests as http
 import json
 import os
+from datetime import datetime
 
 
-class ImportTest(TestCase):
+class HttpMixin:
+    def _send_imports_post(self, data):
+        return http.post(url=self._imports_url, 
+                         data=json.dumps(data))
+
+    def _send_nodes_get(self, id):
+        return http.get(url=f'{self._get_nodes_url()}{id}')
+
+    @classmethod
+    def _get_host(self):
+        host = os.environ.get('WEB_HOST', 'http://127.0.0.1')
+        port = os.environ.get('WEB_PORT', '80')
+        return f'{host}:{port}'
+
+    @classmethod
+    def _get_imports_url(cls):
+        host = cls._get_host()
+        return f'{host}/imports'
+
+    @classmethod
+    def _get_nodes_url(cls):
+        host = cls._get_host()
+        return f'{host}/nodes/'
+
+
+class ImportTest(TestCase, HttpMixin):
     @classmethod
     def setUpTestData(cls):
         cls.normal_item = {
@@ -23,13 +50,7 @@ class ImportTest(TestCase):
             "message": "Validation Failed"
         }
 
-        host = os.environ.get('WEB_HOST', 'http://127.0.0.1')
-        port = os.environ.get('WEB_PORT', '80')
-        cls._imports_url = f'{host}:{port}/imports'
-
-    def _send(self, data):
-        return http.post(url=self._imports_url, 
-                         data=json.dumps(data))
+        cls._imports_url = cls._get_imports_url()
 
     def check_validation_failed(self, resp):
         self.assertEqual(resp.status_code, 400)
@@ -40,38 +61,38 @@ class ImportTest(TestCase):
     def test_updateDate(self):
         # request without field
         data = {'items':[self.normal_item]}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # incorrect value"
         data = {'items':[self.normal_item], 'updateDate': 'asdasd2wef'}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # empty value
         data = {'items':[self.normal_item], 'updateDate': ''}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # None value
         data = {'items':[self.normal_item], 'updateDate': None}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # short date-time format
         data = {'items':[self.normal_item], 'updateDate': '2006-10-25 14:30'}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
         # date-time with offset
         data = {'items':[self.normal_item], 'updateDate': '2006-10-25T14:30+02:00'}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
     def test_items(self):
         # request without field
         data = {'updateDate': self.normal_update_date}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_item_id(self):
@@ -82,7 +103,7 @@ class ImportTest(TestCase):
             'type': 'OFFER',
             'price': 234,
         },]}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # id is not valid uuid
@@ -98,7 +119,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # id is empty
@@ -114,7 +135,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # id is None
@@ -130,7 +151,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # there are two identical id
@@ -146,7 +167,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_parent_id(self):
@@ -163,7 +184,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_name(self):
@@ -174,7 +195,7 @@ class ImportTest(TestCase):
             'type': 'OFFER',
             'price': 234,
         },]}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # name is to long
@@ -190,7 +211,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # name is empty
@@ -206,7 +227,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # name is None
@@ -222,7 +243,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_type(self):
@@ -233,7 +254,7 @@ class ImportTest(TestCase):
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'price': 234,
         },]}
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # type is not valid
@@ -249,7 +270,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # type is empty
@@ -265,7 +286,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # type is None
@@ -281,7 +302,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_price(self):
@@ -298,7 +319,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # price is negative
@@ -314,7 +335,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # price is None for offer
@@ -330,7 +351,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # price is empty for offer
@@ -346,7 +367,7 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
         # price is not null for category
@@ -362,33 +383,63 @@ class ImportTest(TestCase):
                 self.normal_item
             ]
         }
-        resp = self._send(data)
+        resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
-    def test_all_fields_correct(self):
-        data = {
+
+class IntegratedTest(TestCase, HttpMixin):
+    @classmethod
+    def setUpTestData(cls):
+        cls._imports_url = cls._get_imports_url()
+        cls._nodes_url = cls._get_nodes_url()
+
+        cls.normal_update_date = '2022-05-28T21:12:01.000Z'
+
+    def _get_crud_data(self):
+        return {
             'updateDate': self.normal_update_date, 
             'items': [
                 {
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a332',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Продукты',
+                    'parentId': None,
                     'type': 'CATEGORY'
-                }, {
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a334',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
-                    'price': None
-                }, {
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a335',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
-                    'price': 0
-                },
-                self.normal_item
+                }
             ]
         }
-        resp = self._send(data)
+
+    def _create(self, data):
+        resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
+
+    def _assert_node(self, item, update_date, resp):
+        saved_obj = json.loads(resp.content.decode())
+        self.assertEqual(saved_obj['id'], item['id'])
+        self.assertEqual(saved_obj['name'], item['name'])
+        self.assertEqual(saved_obj['parentId'], item['parentId'])
+        self.assertEqual(saved_obj['type'], item['type'])
+        self.assertEqual(saved_obj['price'], item.get('price', None))
+        self.assertEqual(
+            parse_datetime(saved_obj['date']), parse_datetime(update_date)
+        )
+
+    def _read(self, data):
+        resp = self._send_nodes_get(data['items'][0]['id'])
+        self.assertEqual(resp.status_code, 200)
+        self._assert_node(data['items'][0], data['updateDate'], resp)
+
+    def _update(self):
+        pass
+
+    def _delete(self):
+        pass
+
+    def test_CRUD(self):
+        data = self._get_crud_data()
+
+        self._create(data)
+        self._read(data)
+        self._update()
+        self._delete()
+
+
