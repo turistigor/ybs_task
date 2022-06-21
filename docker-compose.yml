@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   db:
     image: postgres
     volumes:
@@ -11,6 +12,7 @@ services:
       - POSTGRES_PASSWORD=p_password
     ports: 
      - 5432:5432
+
   web:
     build: .
     image: igorturist/ybs_task:0.1.0
@@ -25,6 +27,7 @@ services:
       - 80:80
     depends_on:
       - db
+
   test:
     image: igorturist/ybs_task:0.1.0
     command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
