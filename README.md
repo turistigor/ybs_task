@@ -5,6 +5,11 @@ Yandex backend school вторая задача встепительного э�
     docker pull igorturist/ybs_task:0.1.0
     docker-compose up web
 
+Обновить и перезапустить приложение:
+    docker pull igorturist/ybs_task:0.1.0
+    docker-compose down
+    docker-compose up web
+
  Тесты:
     Запустить тесты на своей машине, приложение развернуто на удаленом сервере:
         скачать файл в любую удобную директорию https://github.com/turistigor/ybs_task/blob/main/docker-compose.yml
