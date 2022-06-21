@@ -42,12 +42,11 @@ class ListField(forms.MultipleChoiceField):
         return values
 
     def validate(self, value):
+        self.ids = {}
         if self.required and not value:
             raise ValidationError(
                 self.error_messages["required"], code="required"
             )
-
-        ids = set()
 
         for val in value:
             form = self.form_class(val)
@@ -59,10 +58,10 @@ class ListField(forms.MultipleChoiceField):
                 )
             else:
                 new_id = form.cleaned_data['id']
-                if new_id in ids:
+                if new_id in self.ids.keys():
                     raise ValidationError('id is not unique in the imported set')
                 else:
-                    ids.add(new_id)
+                    self.ids[new_id] = val
 
 
 class ImportForm(forms.Form):
