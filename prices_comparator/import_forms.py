@@ -7,7 +7,7 @@ import prices_comparator.common as const
 class ImportItemForm(forms.Form):
     id = forms.UUIDField()
     name = forms.CharField(max_length=const.IMPORT_UNIT_NAME_MAX_LENGTH)
-    parentId = forms.UUIDField()
+    parentId = forms.UUIDField(required=False)
     type = forms.ChoiceField(
         choices=const.IMPORT_UNIT_TYPE_CHOICES
     )
@@ -22,7 +22,7 @@ class ImportItemForm(forms.Form):
                 raise ValidationError(message='price for category isn\'t null')
         elif item_type == 'OFFER':
             if not isinstance(price, int) or price < 0:
-                raise ValidationError(message='price for category isn\'t null')
+                raise ValidationError(message='invalid offer price')
 
         return super().clean()
 
@@ -68,3 +68,6 @@ class ImportForm(forms.Form):
     items = ListField(item_form_class=ImportItemForm)
     updateDate = forms.DateTimeField()
 
+
+class NodeForm(forms.Form):
+    id = forms.UUIDField()
