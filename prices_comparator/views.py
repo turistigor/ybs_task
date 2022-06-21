@@ -3,16 +3,25 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 import json
 
+from requests import JSONDecodeError
+
 from prices_comparator.import_forms import ImportForm
 
 
 class PricesComparatorView(View):
     def post(self, request):
-        data = json.loads(request.body.decode())
+        try:
+            data = json.loads(request.body.decode())
+        except JSONDecodeError:
+            return HttpResponseBadRequest(json.dumps({
+                "code": 400,
+                "message": "Validation Failed"
+            }))
+
         import_form = ImportForm(data)
 
         if import_form.is_valid():
-            #TODO: create db models, validate and save
+            
             return HttpResponse()
         else:
             return HttpResponseBadRequest(json.dumps({
