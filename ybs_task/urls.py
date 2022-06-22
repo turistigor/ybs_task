@@ -22,4 +22,5 @@ from prices_comparator.views import PricesComparatorView
 urlpatterns = [
     path('imports', PricesComparatorView.as_view(), name='imports'),
     path('nodes/<uuid:id>', PricesComparatorView.as_view(), name='nodes'),
+    path('delete/<uuid:id>', PricesComparatorView.as_view(), name='nodes'),
 ]

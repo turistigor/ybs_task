@@ -65,9 +65,8 @@ class PricesComparatorView(View):
         qs = node.importmodel_set.all().values()
         return (model_to_dict(child) for child in qs)
 
-    def _stringify(self, node, children):
-        # some fields are converted to strings to become jsonable
-        d = model_to_dict(node)
+    def _stringify(self, d, children):
+        ''' some fields are converted to strings to become jsonable '''
 
         d['children'] = children
         d['id'] = str(d['id'])
@@ -77,7 +76,9 @@ class PricesComparatorView(View):
             del d['parent_id']
         except KeyError:
             pass
+
         d['date'] = datetime.isoformat(d['date'])
+
         return d
 
     def _model_to_dict(self, node):
@@ -85,23 +86,39 @@ class PricesComparatorView(View):
         children = [
             self._model_to_dict(child) for child in self._get_node_children(node)
         ]
-        #TODO: price of category is the average price of all offers in it
-        #TODO: children for empty cat is an empty list; for offer is null
 
-        return self._stringify(node, children)
+        d = model_to_dict(node)
 
-    def get(self, request, *args, **kwargs):
-        node_form = NodeForm({'id': kwargs['id']})
+        return self._stringify(d, children)
 
+    def _get_node_id(self, node_id):
+        node_form = NodeForm({'id': node_id})
+        if not node_form.is_valid():
+            raise ValidationError(message='Validation error')
+
+        return node_form.cleaned_data['id']
+
+    def _get_node_json(self, node_id):
+        node_model = ImportModel.objects.get(id=node_id)
+        item = self._model_to_dict(node_model)
+        return json.dumps(item)
+
+    def _delete_node(self, node_id):
+        res = ImportModel.objects.filter(id=node_id).delete()
+        if not res[0]:
+            raise ImportModel.DoesNotExist()
+
+    def _process_node(self, request_method, node_id):
         try:
-            if not node_form.is_valid():
-                raise ValidationError(message='Validation error')
-
-            node_id = node_form.cleaned_data['id']
+            node_id = self._get_node_id(node_id)
 
             with transaction.atomic():
-                node_model = ImportModel.objects.get(id=node_id)
-                item = self._model_to_dict(node_model)
+                if request_method == 'GET':
+                    resp_content = self._get_node_json(node_id)
+                    return HttpResponse(resp_content)
+                elif request_method == 'DELETE':
+                    self._delete_node(node_id)
+                    return HttpResponse()
 
         except ValidationError:
             return self._http_resp_bad_request
@@ -109,4 +126,9 @@ class PricesComparatorView(View):
         except ImportModel.DoesNotExist:
             return self._http_resp_not_found
 
-        return HttpResponse(json.dumps(item))
+
+    def get(self, request, *args, **kwargs):
+        return self._process_node(request.method, kwargs['id'])
+
+    def delete(self, request, *args, **kwargs):
+        return self._process_node(request.method, kwargs['id'])
