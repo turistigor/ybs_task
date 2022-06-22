@@ -400,7 +400,7 @@ class IntegratedTest(TestCase, HttpMixin):
             'updateDate': self.normal_update_date, 
             'items': [
                 {
-                    'id': '3fa85f64-5717-4562-b3fc-2c963f66a332',
+                    'id': '11111111-1111-1111-1111-111111111111',
                     'name': 'Продукты',
                     'parentId': None,
                     'type': 'CATEGORY'
@@ -428,18 +428,28 @@ class IntegratedTest(TestCase, HttpMixin):
         self.assertEqual(resp.status_code, 200)
         self._assert_node(data['items'][0], data['updateDate'], resp)
 
-    def _update(self):
-        pass
+    def _update(self, data):
+        resp = self._send_imports_post(data)
+        self.assertEqual(resp.status_code, 200)
 
-    def _delete(self):
+    def _delete(self, data):
         pass
 
     def test_CRUD(self):
         data = self._get_crud_data()
 
+        #create
         self._create(data)
         self._read(data)
-        self._update()
-        self._delete()
+
+        #update
+        data['items'][0].update(name='Продукты питания')
+        self._create(data)
+        self._read(data)
+
+        #delete
+        self._delete(data)
+        self._read(data)
+        self._delete(data)
 
 
