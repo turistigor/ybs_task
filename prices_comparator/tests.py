@@ -40,6 +40,10 @@ class HttpMixin:
         return f'{host}/delete/'
 
 
+DATE_TIME_WITH_TZ = '2022-05-28T21:12:01.000Z'
+DATE_TIME_WITH_OFFSET = '20022-10-25T14:30+02:00'
+
+
 class ImportTest(TestCase, HttpMixin):
     @classmethod
     def setUpTestData(cls):
@@ -50,8 +54,6 @@ class ImportTest(TestCase, HttpMixin):
             'type': 'OFFER',
             'price': 234,
         }
-
-        cls.normal_update_date = '2022-05-28T21:12:01.000Z'
 
         cls._validation_failed = {
             "code": 400,
@@ -87,25 +89,15 @@ class ImportTest(TestCase, HttpMixin):
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
-        # short date-time format
-        data = {'items':[self.normal_item], 'updateDate': '2006-10-25 14:30'}
-        resp = self._send_imports_post(data)
-        self.assertEqual(resp.status_code, 200)
-
-        # date-time with offset
-        data = {'items':[self.normal_item], 'updateDate': '2006-10-25T14:30+02:00'}
-        resp = self._send_imports_post(data)
-        self.assertEqual(resp.status_code, 200)
-
     def test_items(self):
         # request without field
-        data = {'updateDate': self.normal_update_date}
+        data = {'updateDate': DATE_TIME_WITH_TZ}
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
     def test_item_id(self):
         # request without field
-        data = {'updateDate': self.normal_update_date, 'items': [{
+        data = {'updateDate': DATE_TIME_WITH_OFFSET, 'items': [{
             'name': 'Оффер',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'type': 'OFFER',
@@ -116,7 +108,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # id is not valid uuid
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_TZ,
             'items': [{
                     'id': 'asdew83rnf c',
                     'name': 'Фрукт',
@@ -132,7 +124,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # id is empty
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '',
                     'name': 'Фрукт',
@@ -148,7 +140,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # id is None
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_TZ,
             'items': [{
                     'id': None,
                     'name': 'Фрукт',
@@ -164,7 +156,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # there are two identical id
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': DATE_TIME_WITH_OFFSET, 
             'items': [{
                     'id': self.normal_item['id'],
                     'name': 'Фрукт',
@@ -181,7 +173,7 @@ class ImportTest(TestCase, HttpMixin):
     def test_parent_id(self):
         # parentId is not valid uuid
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': DATE_TIME_WITH_TZ, 
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -197,7 +189,7 @@ class ImportTest(TestCase, HttpMixin):
 
     def test_name(self):
         # request without field
-        data = {'updateDate': self.normal_update_date, 'items': [{
+        data = {'updateDate': DATE_TIME_WITH_TZ, 'items': [{
             'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'type': 'OFFER',
@@ -208,7 +200,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # name is to long
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 201*'a',
@@ -224,7 +216,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # name is empty
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_TZ,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': '',
@@ -240,7 +232,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # name is None
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': None,
@@ -256,7 +248,7 @@ class ImportTest(TestCase, HttpMixin):
 
     def test_type(self):
         # request without field
-        data = {'updateDate': self.normal_update_date, 'items': [{
+        data = {'updateDate': DATE_TIME_WITH_TZ, 'items': [{
             'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'name': 'Оффер',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
@@ -267,7 +259,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # type is not valid
         data = {
-            'updateDate': self.normal_update_date, 
+            'updateDate': DATE_TIME_WITH_OFFSET, 
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -283,7 +275,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # type is empty
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -299,7 +291,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # type is None
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -316,7 +308,7 @@ class ImportTest(TestCase, HttpMixin):
     def test_price(self):
         # price is nan
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -332,7 +324,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # price is negative
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -348,7 +340,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # price is None for offer
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -364,7 +356,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # price is empty for offer
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -380,7 +372,7 @@ class ImportTest(TestCase, HttpMixin):
 
         # price is not null for category
         data = {
-            'updateDate': self.normal_update_date,
+            'updateDate': DATE_TIME_WITH_OFFSET,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
@@ -402,11 +394,9 @@ class IntegratedTest(TestCase, HttpMixin):
         cls._imports_url = cls._get_imports_url()
         cls._nodes_url = cls._get_nodes_url()
 
-        cls.normal_update_date = '2022-05-28T21:12:01.000Z'
-
     def _get_crud_data(self):
         return {
-            'updateDate': self.normal_update_date, 
+            'updateDate': DATE_TIME_WITH_TZ, 
             'items': [
                 {
                     'id': '11111111-1111-1111-1111-111111111111',
