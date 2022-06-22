@@ -529,3 +529,25 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self._read(self._items[0]['children'][0], expected_found=False)
         self._delete(data, expected_found=False)
 
+    def test_update_type(self):
+        # can't change type for existing item
+        data = {
+            'updateDate': self.DATE_TIME_WITH_TZ,
+            'items': [{
+                    'id': '1fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'name': 'Фрукт',
+                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                    'type': 'OFFER',
+                    'price': 100,
+                }
+            ]
+        }
+        resp = self._send_imports_post(data)
+        self.assertEqual(resp.status_code, 200)
+
+        data['items'][0]['type'] = 'CATEGORY'
+        data['items'][0]['price'] = None
+        resp = self._send_imports_post(data)
+        self.check_validation_failed(resp)
+
+        self._delete(data['items'][0]['id'])

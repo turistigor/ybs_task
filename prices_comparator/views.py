@@ -38,6 +38,7 @@ class PricesComparatorView(View):
             with transaction.atomic():
                 while len(ids):
                     item = ids[list(ids)[0]]
+                    self._check_db_consistency(item)
                     _, used_ids = self._save_model_rec(item, ids, update_date)
                     for used_id in used_ids:
                         del ids[used_id]
@@ -52,6 +53,15 @@ class PricesComparatorView(View):
 
     def delete(self, request, *args, **kwargs):
         return self._process_node(request.method, kwargs['id'])
+
+    def _check_db_consistency(self, item):
+        try:
+            m = ImportModel.objects.get(id=item['id'])
+        except ImportModel.DoesNotExist:
+            pass
+        else:
+            if m.type != item['type']:
+                raise ValidationError(message="You can't change item type")
 
     def _save_model_rec(self, item, ids, update_date, used_ids=None):
         parent_id = item.get('parentId', None)
