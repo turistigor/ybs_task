@@ -53,8 +53,9 @@ class PricesComparatorView(View):
     def delete(self, request, *args, **kwargs):
         return self._process_node(request.method, kwargs['id'])
 
-    def _save_model_rec(self, item, ids, update_date, used_ids=set()):
+    def _save_model_rec(self, item, ids, update_date, used_ids=None):
         parent_id = item.get('parentId', None)
+        used_ids = used_ids or set()
         if parent_id in ids:
             parent_model, used_ids = self._save_model_rec(
                 ids[parent_id], ids, update_date, used_ids
