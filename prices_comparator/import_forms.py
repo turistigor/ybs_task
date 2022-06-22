@@ -61,7 +61,7 @@ class ListField(forms.MultipleChoiceField):
                 if new_id in self.ids.keys():
                     raise ValidationError('id is not unique in the imported set')
                 else:
-                    self.ids[new_id] = val
+                    self.ids[str(new_id)] = val
 
 
 class ImportForm(forms.Form):
