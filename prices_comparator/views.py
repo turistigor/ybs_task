@@ -31,24 +31,28 @@ class PricesComparatorView(View):
             import_form = ImportForm(data)
             if not import_form.is_valid():
                 raise ValidationError(message='Validation error')
-            items = import_form.cleaned_data.get('items', [])
+
+            ids = getattr(import_form.fields.get('items', None), 'ids', {})
+            update_date = import_form.cleaned_data['updateDate']
 
             with transaction.atomic():
-                for item in items:
-                    ids = getattr(import_form.fields.get('items', None), 'ids', {})
-                    self._save_model_rec(item, ids, import_form.cleaned_data['updateDate'])
+                while len(ids):
+                    item = ids[list(ids)[0]]
+                    _, used_ids = self._save_model_rec(item, ids, update_date)
+                    for used_id in used_ids:
+                        del ids[used_id]
 
         except (JSONDecodeError, IntegrityError, ValidationError):
             return self._http_resp_bad_request
 
         return HttpResponse()
 
-    def _save_model_rec(self, item, ids, update_date):
-        parent_id = item.get('parent_id', None)
+    def _save_model_rec(self, item, ids, update_date, used_ids=set()):
+        parent_id = item.get('parentId', None)
         if parent_id in ids:
-            parent_model = self._save_model_rec(ids[item.parent_id], ids, update_date)
-            del ids[item.parent_id]
-            parent_model.save()
+            parent_model, used_ids = self._save_model_rec(
+                ids[parent_id], ids, update_date, used_ids
+            )
         else:
             try:
                 parent_model = ImportModel.objects.get(id=parent_id)
@@ -59,11 +63,12 @@ class PricesComparatorView(View):
             id=item['id'], name=item['name'], parent_id=parent_model, 
             type=item['type'], price=item.get('price', None), date=update_date
         )
+        used_ids.add(item['id'])
         m.save()
+        return m, used_ids
 
     def _get_node_children(self, node):
-        qs = node.importmodel_set.all().values()
-        return (model_to_dict(child) for child in qs)
+        return (child for child in node.importmodel_set.all())
 
     def _stringify(self, d, children):
         ''' some fields are converted to strings to become jsonable '''
@@ -82,7 +87,6 @@ class PricesComparatorView(View):
         return d
 
     def _model_to_dict(self, node):
-        #TODO: try to use generator here
         children = [
             self._model_to_dict(child) for child in self._get_node_children(node)
         ]

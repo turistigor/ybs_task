@@ -399,6 +399,11 @@ class IntegratedTest(TestCase, HttpMixin):
             'updateDate': DATE_TIME_WITH_TZ, 
             'items': [
                 {
+                    'id': '11111111-1111-1111-1111-111111111112',
+                    'parentId': '11111111-1111-1111-1111-111111111111',
+                    'name': 'Овощи',
+                    'type': 'CATEGORY'
+                }, {
                     'id': '11111111-1111-1111-1111-111111111111',
                     'name': 'Продукты',
                     'parentId': None,
@@ -411,8 +416,7 @@ class IntegratedTest(TestCase, HttpMixin):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _assert_node(self, item, update_date, resp):
-        saved_obj = json.loads(resp.content.decode())
+    def _assert_node(self, item, update_date, saved_obj):
         self.assertEqual(saved_obj['id'], item['id'])
         self.assertEqual(saved_obj['name'], item['name'])
         self.assertEqual(saved_obj['parentId'], item['parentId'])
@@ -423,11 +427,17 @@ class IntegratedTest(TestCase, HttpMixin):
         )
 
     def _read(self, data, expected_found=True):
-        resp = self._send_nodes_get(data['items'][0]['id'])
+        resp = self._send_nodes_get(data['items'][1]['id'])
         if expected_found:
             self.assertEqual(resp.status_code, 200)
-            self._assert_node(data['items'][0], data['updateDate'], resp)
+            saved_obj = json.loads(resp.content.decode())
+            self._assert_node(data['items'][1], data['updateDate'], saved_obj)
+            self._assert_node(
+                data['items'][0], data['updateDate'], saved_obj['children'][0]
+            )
         else:
+            self.assertEqual(resp.status_code, 404)
+            resp = self._send_nodes_get(data['items'][0]['id'])
             self.assertEqual(resp.status_code, 404)
 
     def _update(self, data):
@@ -435,13 +445,13 @@ class IntegratedTest(TestCase, HttpMixin):
         self.assertEqual(resp.status_code, 200)
 
     def _delete(self, data, expected_found=True):
-        resp = self._send_nodes_delete(data['items'][0]['id'])
+        resp = self._send_nodes_delete(data['items'][1]['id'])
         if expected_found:
             self.assertEqual(resp.status_code, 200)
         else:
             self.assertEqual(resp.status_code, 404)
 
-    def test_CRUD(self):
+    def test_simple_CRUD(self):
         data = self._get_crud_data()
 
         #create
@@ -449,7 +459,7 @@ class IntegratedTest(TestCase, HttpMixin):
         self._read(data)
 
         #update
-        data['items'][0].update(name='Продукты питания')
+        data['items'][1].update(name='Продукты питания')
         self._create(data)
         self._read(data)
 
