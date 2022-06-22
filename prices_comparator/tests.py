@@ -4,7 +4,6 @@ from django.utils.dateparse import parse_datetime
 import requests as http
 import json
 import os
-from datetime import datetime
 import copy
 
 
@@ -401,17 +400,47 @@ class IntegratedTest(TestCase, HttpMixin):
             'parentId': None,
             'type': 'CATEGORY',
             'date': DATE_TIME_WITH_TZ,
-            'children': [
-                {
-                    'id': '11111111-1111-1111-1111-111111111112',
-                    'parentId': '11111111-1111-1111-1111-111111111111',
-                    'name': 'Овощи',
-                    'type': 'CATEGORY',
+            'children': [{
+                'id': '11111111-1111-1111-1111-111111111112',
+                'parentId': '11111111-1111-1111-1111-111111111111',
+                'name': 'Овощи',
+                'price': None,
+                'type': 'CATEGORY',
+                'date': DATE_TIME_WITH_TZ,
+                'children': [{
+                    'id': '11111111-1111-1111-1111-111111111113',
+                    'parentId': '11111111-1111-1111-1111-111111111112',
+                    'name': 'Огурцы',
+                    'price': 11,
+                    'type': 'OFFER',
                     'date': DATE_TIME_WITH_TZ,
                     'children': [],
-                    'price': None
-                },
-            ]
+                },{
+                    'id': '11111111-1111-1111-1111-111111111114',
+                    'parentId': '11111111-1111-1111-1111-111111111112',
+                    'name': 'Подовощи',
+                    'price':  None,
+                    'type': 'CATEGORY',
+                    'date': DATE_TIME_WITH_TZ,
+                    'children': [{
+                        'id': '11111111-1111-1111-1111-111111111115',
+                        'parentId': '11111111-1111-1111-1111-111111111114',
+                        'name': 'Помидоры',
+                        'price': 114,
+                        'type': 'OFFER',
+                        'date': DATE_TIME_WITH_TZ,
+                        'children': [],
+                    }, {
+                        'id': '11111111-1111-1111-1111-111111111116',
+                        'parentId': '11111111-1111-1111-1111-111111111114',
+                        'name': 'Морковь',
+                        'price': 31,
+                        'type': 'OFFER',
+                        'date': DATE_TIME_WITH_TZ,
+                        'children': [],
+                    }],
+                }],
+            }]
         }]
 
     def flatten(self, items, res=None):
@@ -434,7 +463,7 @@ class IntegratedTest(TestCase, HttpMixin):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _assert_node(self, item, saved_obj):
+    def _assert_node(self, item, saved_obj, exclude):
         self.assertEqual(saved_obj['id'], item['id'])
         self.assertEqual(saved_obj['name'], item['name'])
         self.assertEqual(saved_obj['parentId'], item['parentId'])
@@ -445,14 +474,16 @@ class IntegratedTest(TestCase, HttpMixin):
         )
         self.assertEqual('children' in saved_obj, 'children' in item)
         for saved_child, item_child in zip(saved_obj['children'], item['children']):
-            self._assert_node(item_child, saved_child)
+            if exclude and item_child['id'] in exclude:
+                continue
+            self._assert_node(item_child, saved_child, exclude=exclude)
 
-    def _read(self, item, expected_found=True):
+    def _read(self, item, expected_found=True, exclude=None):
         resp = self._send_nodes_get(item['id'])
         if expected_found:
             self.assertEqual(resp.status_code, 200)
             saved_obj = json.loads(resp.content.decode())
-            self._assert_node(item, saved_obj)
+            self._assert_node(item, saved_obj, exclude=exclude)
         else:
             self.assertEqual(resp.status_code, 404)
 
@@ -460,8 +491,8 @@ class IntegratedTest(TestCase, HttpMixin):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _delete(self, data, expected_found=True):
-        resp = self._send_nodes_delete(data['items'][1]['id'])
+    def _delete(self, item_id, expected_found=True):
+        resp = self._send_nodes_delete(item_id)
         if expected_found:
             self.assertEqual(resp.status_code, 200)
         else:
@@ -473,7 +504,6 @@ class IntegratedTest(TestCase, HttpMixin):
         #create
         self._create(data)
         self._read(self._items[0])
-        self._read(self._items[0]['children'][0])
 
         #update
         self._items[0].update(name=data['items'][0]['name'] + '!!!')
@@ -482,7 +512,21 @@ class IntegratedTest(TestCase, HttpMixin):
         self._read(self._items[0])
 
         #delete
-        self._delete(data)
+        deleted_item = self._items[0]['children'][0]['children'][0]
+        self._delete(deleted_item['id'])
+        self._read(deleted_item, expected_found=False)
+        self._read(self._items[0], exclude={deleted_item['id']})
+
+        deleted_item = self._items[0]['children'][0]['children'][1]
+        self._delete(deleted_item['id'])
+        self._read(deleted_item, expected_found=False)
+        self._read(deleted_item['children'][0], expected_found=False)
+        self._read(deleted_item['children'][1], expected_found=False)
+        self._read(self._items[0], exclude={
+            deleted_item['id'], deleted_item['children'][0]['id'], deleted_item['children'][1]['id']
+        })
+
+        self._delete(self._items[0]['id'])
         self._read(self._items[0], expected_found=False)
         self._read(self._items[0]['children'][0], expected_found=False)
         self._delete(data, expected_found=False)
