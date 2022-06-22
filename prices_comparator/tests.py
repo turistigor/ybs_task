@@ -306,7 +306,6 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
-
     def test_price(self):
         # price is nan
         data = {
@@ -384,6 +383,25 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                 },
                 self.normal_item
             ]
+        }
+        resp = self._send_imports_post(data)
+        self.check_validation_failed(resp)
+
+    def test_parents_only_groups(self):
+        data = {
+            'updateDate': self.DATE_TIME_WITH_OFFSET,
+            'items': [{
+                'id': '21111111-1111-1111-1111-111111111111',
+                'name': 'car',
+                'type': 'OFFER',
+                'price': 1002,
+            },{
+                'id': '31111111-1111-1111-1111-111111111111',
+                'parentId': '21111111-1111-1111-1111-111111111111',
+                'name': 'wheel',
+                'type': 'OFFER',
+                'price': 10,
+            }]
         }
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
@@ -534,13 +552,12 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         data = {
             'updateDate': self.DATE_TIME_WITH_TZ,
             'items': [{
-                    'id': '1fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'name': 'Фрукт',
-                    'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
-                    'price': 100,
-                }
-            ]
+                'id': '1fa85f64-5717-4562-b3fc-2c963f66a333',
+                'name': 'Фрукт',
+                'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
+                'type': 'OFFER',
+                'price': 100,
+            }]
         }
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
@@ -551,3 +568,4 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self.check_validation_failed(resp)
 
         self._delete(data['items'][0]['id'])
+

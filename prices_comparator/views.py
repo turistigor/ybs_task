@@ -55,13 +55,15 @@ class PricesComparatorView(View):
         return self._process_node(request.method, kwargs['id'])
 
     def _check_db_consistency(self, item):
+        m = self._get_model(item['id'])
+        if m and  m.type != item['type']:
+            raise ValidationError(message="You can't change item type")
+
+    def _get_model(self, id):
         try:
-            m = ImportModel.objects.get(id=item['id'])
+            return  ImportModel.objects.get(id=id)
         except ImportModel.DoesNotExist:
-            pass
-        else:
-            if m.type != item['type']:
-                raise ValidationError(message="You can't change item type")
+            return
 
     def _save_model_rec(self, item, ids, update_date, used_ids=None):
         parent_id = item.get('parentId', None)
@@ -71,10 +73,10 @@ class PricesComparatorView(View):
                 ids[parent_id], ids, update_date, used_ids
             )
         else:
-            try:
-                parent_model = ImportModel.objects.get(id=parent_id)
-            except ImportModel.DoesNotExist:
-                parent_model = None
+            parent_model = self._get_model(parent_id)
+
+        if parent_model and parent_model.type != 'CATEGORY':
+            raise IntegrityError('Only CATEGORY can be a parent')
 
         m = ImportModel(
             id=item['id'], name=item['name'], parent_id=parent_model, 
@@ -82,6 +84,7 @@ class PricesComparatorView(View):
         )
         used_ids.add(item['id'])
         m.save()
+
         return m, used_ids
 
     def _process_node(self, request_method, node_id):

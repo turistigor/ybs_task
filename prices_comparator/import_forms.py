@@ -51,17 +51,23 @@ class ListField(forms.MultipleChoiceField):
         for val in value:
             form = self.form_class(val)
             if not form.is_valid():
-                raise ValidationError(
-                    self.error_messages["invalid_choice"],
-                    code="invalid_choice",
-                    params={"value": val},
-                )
+                raise ValidationError(message = f'There is an error at \'{val}\'')
             else:
                 new_id = form.cleaned_data['id']
                 if new_id in self.ids.keys():
                     raise ValidationError('id is not unique in the imported set')
                 else:
                     self.ids[str(new_id)] = val
+
+        for item in self.ids.values():
+            try:
+                parent = self.ids[str(item['parentId'])]
+                if parent['type'] != 'CATEGORY':
+                    raise ValidationError(
+                        message='Only CATEGORY can be a parent'
+                    )
+            except KeyError:
+                continue
 
 
 class ImportForm(forms.Form):
