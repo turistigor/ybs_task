@@ -66,6 +66,7 @@ class PricesComparatorView(View):
         return (model_to_dict(child) for child in qs)
 
     def _stringify(self, node, children):
+        # some fields are converted to strings to become jsonable
         d = model_to_dict(node)
 
         d['children'] = children

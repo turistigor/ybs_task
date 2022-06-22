@@ -388,6 +388,7 @@ class ImportTest(TestCase, HttpMixin):
 
 
 class IntegratedTest(TestCase, HttpMixin):
+
     @classmethod
     def setUpTestData(cls):
         cls._imports_url = cls._get_imports_url()
