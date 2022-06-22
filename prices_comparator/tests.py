@@ -5,6 +5,7 @@ import requests as http
 import json
 import os
 from datetime import datetime
+import copy
 
 
 class HttpMixin:
@@ -394,50 +395,65 @@ class IntegratedTest(TestCase, HttpMixin):
         cls._imports_url = cls._get_imports_url()
         cls._nodes_url = cls._get_nodes_url()
 
-    def _get_crud_data(self):
-        return {
-            'updateDate': DATE_TIME_WITH_TZ, 
-            'items': [
+        cls._items = [{
+            'id': '11111111-1111-1111-1111-111111111111',
+            'name': 'Продукты',
+            'parentId': None,
+            'type': 'CATEGORY',
+            'date': DATE_TIME_WITH_TZ,
+            'children': [
                 {
                     'id': '11111111-1111-1111-1111-111111111112',
                     'parentId': '11111111-1111-1111-1111-111111111111',
                     'name': 'Овощи',
-                    'type': 'CATEGORY'
-                }, {
-                    'id': '11111111-1111-1111-1111-111111111111',
-                    'name': 'Продукты',
-                    'parentId': None,
-                    'type': 'CATEGORY'
-                }
+                    'type': 'CATEGORY',
+                    'date': DATE_TIME_WITH_TZ,
+                    'children': [],
+                    'price': None
+                },
             ]
+        }]
+
+    def flatten(self, items, res=None):
+        res = res or []
+        for item in items:
+            citem = copy.deepcopy(item)
+            if 'children' in citem:
+                res = self.flatten(citem['children'], res)
+                del citem['children']
+            res.append(citem)
+        return res
+
+    def _get_crud_data(self):
+        return {
+            'updateDate': DATE_TIME_WITH_TZ, 
+            'items': self.flatten(self._items)
         }
 
     def _create(self, data):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _assert_node(self, item, update_date, saved_obj):
+    def _assert_node(self, item, saved_obj):
         self.assertEqual(saved_obj['id'], item['id'])
         self.assertEqual(saved_obj['name'], item['name'])
         self.assertEqual(saved_obj['parentId'], item['parentId'])
         self.assertEqual(saved_obj['type'], item['type'])
         self.assertEqual(saved_obj['price'], item.get('price', None))
         self.assertEqual(
-            parse_datetime(saved_obj['date']), parse_datetime(update_date)
+            parse_datetime(saved_obj['date']), parse_datetime(item['date'])
         )
+        self.assertEqual('children' in saved_obj, 'children' in item)
+        for saved_child, item_child in zip(saved_obj['children'], item['children']):
+            self._assert_node(item_child, saved_child)
 
-    def _read(self, data, expected_found=True):
-        resp = self._send_nodes_get(data['items'][1]['id'])
+    def _read(self, item, expected_found=True):
+        resp = self._send_nodes_get(item['id'])
         if expected_found:
             self.assertEqual(resp.status_code, 200)
             saved_obj = json.loads(resp.content.decode())
-            self._assert_node(data['items'][1], data['updateDate'], saved_obj)
-            self._assert_node(
-                data['items'][0], data['updateDate'], saved_obj['children'][0]
-            )
+            self._assert_node(item, saved_obj)
         else:
-            self.assertEqual(resp.status_code, 404)
-            resp = self._send_nodes_get(data['items'][0]['id'])
             self.assertEqual(resp.status_code, 404)
 
     def _update(self, data):
@@ -456,16 +472,19 @@ class IntegratedTest(TestCase, HttpMixin):
 
         #create
         self._create(data)
-        self._read(data)
+        self._read(self._items[0])
+        self._read(self._items[0]['children'][0])
 
         #update
-        data['items'][1].update(name='Продукты питания')
+        self._items[0].update(name=data['items'][0]['name'] + '!!!')
+        data['items'] = self.flatten(self._items)
         self._create(data)
-        self._read(data)
+        self._read(self._items[0])
 
         #delete
         self._delete(data)
-        self._read(data, expected_found=False)
+        self._read(self._items[0], expected_found=False)
+        self._read(self._items[0]['children'][0], expected_found=False)
         self._delete(data, expected_found=False)
 
 
