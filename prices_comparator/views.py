@@ -59,12 +59,6 @@ class PricesComparatorView(View):
         if m and  m.type != item['type']:
             raise ValidationError(message="You can't change item type")
 
-    def _get_model(self, id):
-        try:
-            return  ImportModel.objects.get(id=id)
-        except ImportModel.DoesNotExist:
-            return
-
     def _save_model_rec(self, item, ids, update_date, used_ids=None):
         parent_id = item.get('parentId', None)
         used_ids = used_ids or set()
@@ -86,6 +80,12 @@ class PricesComparatorView(View):
         m.save()
 
         return m, used_ids
+
+    def _get_model(self, id):
+        try:
+            return  ImportModel.objects.get(id=id)
+        except ImportModel.DoesNotExist:
+            return
 
     def _process_node(self, request_method, node_id):
         try:
