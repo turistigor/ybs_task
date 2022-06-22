@@ -47,6 +47,12 @@ class PricesComparatorView(View):
 
         return HttpResponse()
 
+    def get(self, request, *args, **kwargs):
+        return self._process_node(request.method, kwargs['id'])
+
+    def delete(self, request, *args, **kwargs):
+        return self._process_node(request.method, kwargs['id'])
+
     def _save_model_rec(self, item, ids, update_date, used_ids=set()):
         parent_id = item.get('parentId', None)
         if parent_id in ids:
@@ -67,6 +73,45 @@ class PricesComparatorView(View):
         m.save()
         return m, used_ids
 
+    def _process_node(self, request_method, node_id):
+        try:
+            node_id = self._get_node_id(node_id)
+
+            with transaction.atomic():
+                if request_method == 'GET':
+                    resp_content = self._get_node_json(node_id)
+                    return HttpResponse(resp_content)
+                elif request_method == 'DELETE':
+                    self._delete_node(node_id)
+                    return HttpResponse()
+
+        except ValidationError:
+            return self._http_resp_bad_request
+
+        except ImportModel.DoesNotExist:
+            return self._http_resp_not_found
+
+    def _get_node_id(self, node_id):
+        node_form = NodeForm({'id': node_id})
+        if not node_form.is_valid():
+            raise ValidationError(message='Validation error')
+
+        return node_form.cleaned_data['id']
+
+    def _get_node_json(self, node_id):
+        node_model = ImportModel.objects.get(id=node_id)
+        item = self._model_to_dict(node_model)
+        return json.dumps(item)
+
+    def _model_to_dict(self, node):
+        children = [
+            self._model_to_dict(child) for child in self._get_node_children(node)
+        ]
+
+        d = model_to_dict(node)
+
+        return self._stringify(d, children)
+
     def _get_node_children(self, node):
         return (child for child in node.importmodel_set.all())
 
@@ -86,53 +131,8 @@ class PricesComparatorView(View):
 
         return d
 
-    def _model_to_dict(self, node):
-        children = [
-            self._model_to_dict(child) for child in self._get_node_children(node)
-        ]
-
-        d = model_to_dict(node)
-
-        return self._stringify(d, children)
-
-    def _get_node_id(self, node_id):
-        node_form = NodeForm({'id': node_id})
-        if not node_form.is_valid():
-            raise ValidationError(message='Validation error')
-
-        return node_form.cleaned_data['id']
-
-    def _get_node_json(self, node_id):
-        node_model = ImportModel.objects.get(id=node_id)
-        item = self._model_to_dict(node_model)
-        return json.dumps(item)
-
     def _delete_node(self, node_id):
         res = ImportModel.objects.filter(id=node_id).delete()
         if not res[0]:
             raise ImportModel.DoesNotExist()
 
-    def _process_node(self, request_method, node_id):
-        try:
-            node_id = self._get_node_id(node_id)
-
-            with transaction.atomic():
-                if request_method == 'GET':
-                    resp_content = self._get_node_json(node_id)
-                    return HttpResponse(resp_content)
-                elif request_method == 'DELETE':
-                    self._delete_node(node_id)
-                    return HttpResponse()
-
-        except ValidationError:
-            return self._http_resp_bad_request
-
-        except ImportModel.DoesNotExist:
-            return self._http_resp_not_found
-
-
-    def get(self, request, *args, **kwargs):
-        return self._process_node(request.method, kwargs['id'])
-
-    def delete(self, request, *args, **kwargs):
-        return self._process_node(request.method, kwargs['id'])
