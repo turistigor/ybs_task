@@ -15,6 +15,9 @@ class HttpMixin:
     def _send_nodes_get(self, id):
         return http.get(url=f'{self._get_nodes_url()}{id}')
 
+    def _send_nodes_delete(self, id):
+        return http.delete(url=f'{self._get_nodes_url()}{id}')
+
     @classmethod
     def _get_host(self):
         host = os.environ.get('WEB_HOST', 'http://127.0.0.1')
@@ -30,6 +33,11 @@ class HttpMixin:
     def _get_nodes_url(cls):
         host = cls._get_host()
         return f'{host}/nodes/'
+
+    @classmethod
+    def _get_delete_url(cls):
+        host = cls._get_host()
+        return f'{host}/delete/'
 
 
 class ImportTest(TestCase, HttpMixin):
@@ -424,17 +432,24 @@ class IntegratedTest(TestCase, HttpMixin):
             parse_datetime(saved_obj['date']), parse_datetime(update_date)
         )
 
-    def _read(self, data):
+    def _read(self, data, expected_found=True):
         resp = self._send_nodes_get(data['items'][0]['id'])
-        self.assertEqual(resp.status_code, 200)
-        self._assert_node(data['items'][0], data['updateDate'], resp)
+        if expected_found:
+            self.assertEqual(resp.status_code, 200)
+            self._assert_node(data['items'][0], data['updateDate'], resp)
+        else:
+            self.assertEqual(resp.status_code, 404)
 
     def _update(self, data):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _delete(self, data):
-        pass
+    def _delete(self, data, expected_found=True):
+        resp = self._send_nodes_delete(data['items'][0]['id'])
+        if expected_found:
+            self.assertEqual(resp.status_code, 200)
+        else:
+            self.assertEqual(resp.status_code, 404)
 
     def test_CRUD(self):
         data = self._get_crud_data()
@@ -450,7 +465,7 @@ class IntegratedTest(TestCase, HttpMixin):
 
         #delete
         self._delete(data)
-        self._read(data)
-        self._delete(data)
+        self._read(data, expected_found=False)
+        self._delete(data, expected_found=False)
 
 
