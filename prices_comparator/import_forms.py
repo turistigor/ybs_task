@@ -43,6 +43,7 @@ class ListField(forms.MultipleChoiceField):
 
     def validate(self, value):
         self.ids = {}
+        self.parent_ids = set()
         if self.required and not value:
             raise ValidationError(
                 self.error_messages["required"], code="required"
@@ -63,9 +64,9 @@ class ListField(forms.MultipleChoiceField):
             try:
                 parent = self.ids[str(item['parentId'])]
                 if parent['type'] != 'CATEGORY':
-                    raise ValidationError(
-                        message='Only CATEGORY can be a parent'
-                    )
+                    raise ValidationError('Only CATEGORY can be a parent')
+
+                self.parent_ids.add(str(parent['id']))
             except KeyError:
                 continue
 
