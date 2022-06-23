@@ -33,9 +33,16 @@ class PricesComparatorView(View):
                 raise ValidationError(message='Validation error')
 
             ids = getattr(import_form.fields.get('items', None), 'ids', {})
+            parent_ids = getattr(import_form.fields.get('items', None), 'parent_ids', {})
             update_date = import_form.cleaned_data['updateDate']
 
             with transaction.atomic():
+                db_ids = {
+                    str(m.id): m for m in ImportModel.objects.filter(
+                        id__in=(set(ids.keys()) | parent_ids)
+                    )
+                }
+
                 while len(ids):
                     item = ids[list(ids)[0]]
                     self._check_db_consistency(item)
