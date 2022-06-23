@@ -56,7 +56,7 @@ class PricesComparatorView(View):
 
     def _check_db_consistency(self, item):
         m = self._get_model(item['id'])
-        if m and  m.type != item['type']:
+        if m and m.type != item['type']:
             raise ValidationError(message="You can't change item type")
 
     def _save_model_rec(self, item, ids, update_date, used_ids=None):

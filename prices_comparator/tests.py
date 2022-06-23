@@ -569,3 +569,30 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
 
         self._delete(data['items'][0]['id'])
 
+    def test_parents_only_groups(self):
+        data = {
+            'updateDate': self.DATE_TIME_WITH_TZ,
+            'items': [{
+                'id': '21111111-1111-1111-1111-111111111111',
+                'name': 'car',
+                'type': 'OFFER',
+                'price': 1002,
+            }]
+        }
+        resp = self._send_imports_post(data)
+        self.assertEqual(resp.status_code, 200)
+
+        data = {
+            'updateDate': self.DATE_TIME_WITH_TZ,
+            'items':[{
+                'id': '31111111-1111-1111-1111-111111111111',
+                'parentId': '21111111-1111-1111-1111-111111111111',
+                'name': 'wheel',
+                'type': 'OFFER',
+                'price': 10,
+            }]
+        }
+        resp = self._send_imports_post(data)
+        self.check_validation_failed(resp)
+
+        self._delete('21111111-1111-1111-1111-111111111111')
