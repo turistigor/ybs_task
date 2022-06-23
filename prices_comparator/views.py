@@ -130,6 +130,7 @@ class PricesComparatorView(View):
         ]
 
         d = model_to_dict(node)
+        d['children'] = children
 
         return self._stringify(d, children)
 
@@ -138,10 +139,9 @@ class PricesComparatorView(View):
         return (child for child in node.importmodel_set.all())
 
     @staticmethod
-    def _stringify(d, children):
+    def _stringify(d):
         ''' some fields are converted to strings to become jsonable '''
 
-        d['children'] = children
         d['id'] = str(d['id'])
         try:
             parent_id = d['parent_id']
