@@ -597,3 +597,43 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self.check_validation_failed(resp)
 
         self._delete('21111111-1111-1111-1111-111111111111')
+
+    def test_update_to_null_parent(self):
+        data = {
+            'updateDate': self.DATE_TIME_WITH_TZ,
+            'items': [{
+                'id': '21111111-1111-1111-1111-111111111111',
+                'name': 'car',
+                'type': 'CATEGORY',
+                'price': None
+            }, {
+                'id': '31111111-1111-1111-1111-111111111111',
+                'parentId': '21111111-1111-1111-1111-111111111111',
+                'name': 'wheel',
+                'type': 'OFFER',
+                'price': 10,
+            }]
+        }
+        resp = self._send_imports_post(data)
+        self.assertEqual(resp.status_code, 200)
+
+        data = {
+            'updateDate': self.DATE_TIME_WITH_TZ,
+            'items': [{
+                'id': '31111111-1111-1111-1111-111111111111',
+                'parentId': None,
+                'name': 'whEEl',
+                'type': 'OFFER',
+                'price': 11,
+            }]
+        }
+
+        resp = self._send_imports_post(data)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self._send_nodes_get('31111111-1111-1111-1111-111111111111')
+        saved = json.loads(resp.content.decode())
+        self.assertIsNone(saved['parentId'])
+
+        self._delete('21111111-1111-1111-1111-111111111111')
+        self._delete('31111111-1111-1111-1111-111111111111')
