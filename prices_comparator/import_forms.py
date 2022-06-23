@@ -42,31 +42,32 @@ class ListField(forms.MultipleChoiceField):
         return values
 
     def validate(self, value):
-        self.ids = {}
-        self.parent_ids = set()
+
         if self.required and not value:
             raise ValidationError(
                 self.error_messages["required"], code="required"
             )
 
+        self.local_ids = {}
         for val in value:
             form = self.form_class(val)
             if not form.is_valid():
                 raise ValidationError(message = f'There is an error at \'{val}\'')
             else:
                 new_id = str(form.cleaned_data['id'])
-                if new_id in self.ids.keys():
+                if new_id in self.local_ids.keys():
                     raise ValidationError('id is not unique in the imported set')
                 else:
-                    self.ids[new_id] = val
+                    self.local_ids[new_id] = val
 
-        for item in self.ids.values():
+        self.all_ids = set(self.local_ids)
+        for item in self.local_ids.values():
             try:
-                parent = self.ids[str(item['parentId'])]
-                if parent['type'] != 'CATEGORY':
+                parent = self.local_ids.get(item['parentId'], None)
+                if parent and parent['type'] != 'CATEGORY':
                     raise ValidationError('Only CATEGORY can be a parent')
 
-                self.parent_ids.add(str(parent['id']))
+                self.all_ids.add(item['parentId'])
             except KeyError:
                 continue
 
