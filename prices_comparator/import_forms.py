@@ -53,11 +53,11 @@ class ListField(forms.MultipleChoiceField):
             if not form.is_valid():
                 raise ValidationError(message = f'There is an error at \'{val}\'')
             else:
-                new_id = form.cleaned_data['id']
+                new_id = str(form.cleaned_data['id'])
                 if new_id in self.ids.keys():
                     raise ValidationError('id is not unique in the imported set')
                 else:
-                    self.ids[str(new_id)] = val
+                    self.ids[new_id] = val
 
         for item in self.ids.values():
             try:
