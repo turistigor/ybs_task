@@ -483,7 +483,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-    def _assert_node(self, item, saved_obj, exclude):
+    def _assert_node(self, item, saved_obj):
         self.assertEqual(saved_obj['id'], item['id'])
         self.assertEqual(saved_obj['name'], item['name'])
         self.assertEqual(saved_obj['parentId'], item['parentId'])
@@ -493,17 +493,20 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             parse_datetime(saved_obj['date']), parse_datetime(item['date'])
         )
         self.assertEqual('children' in saved_obj, 'children' in item)
-        for saved_child, item_child in zip(saved_obj['children'], item['children']):
-            if exclude and item_child['id'] in exclude:
-                continue
-            self._assert_node(item_child, saved_child, exclude=exclude)
+        for saved_child in saved_obj['children']:
+            for item_child in item['children']:
+                if item_child['id'] == saved_child['id']:
+                    self._assert_node(item_child, saved_child)
+                    break
+            else:
+                self.assertEqual(True, False, f"{saved_child['id']}")
 
-    def _read(self, item, expected_found=True, exclude=None):
+    def _read(self, item, expected_found=True):
         resp = self._send_nodes_get(item['id'])
         if expected_found:
             self.assertEqual(resp.status_code, 200)
             saved_obj = json.loads(resp.content.decode())
-            self._assert_node(item, saved_obj, exclude=exclude)
+            self._assert_node(item, saved_obj)
         else:
             self.assertEqual(resp.status_code, 404)
 
@@ -522,30 +525,28 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self._read(self._items[0])
 
         #update
-        self._items[0].update(name=data['items'][0]['name'] + '!!!')
+        self._items[0].update(name=self._items[0]['name'] + '!!!')
         data['items'] = self.flatten(self._items)
         self._create(data)
         self._read(self._items[0])
 
         #delete
-        deleted_item = self._items[0]['children'][0]['children'][0]
+        deleted_item = self._items[0]['children'][0]['children'].pop(0)
         self._delete(deleted_item['id'])
         self._read(deleted_item, expected_found=False)
-        self._read(self._items[0], exclude={deleted_item['id']})
+        self._read(self._items[0])
 
-        deleted_item = self._items[0]['children'][0]['children'][1]
+        deleted_item = self._items[0]['children'][0]['children'].pop(0)
         self._delete(deleted_item['id'])
         self._read(deleted_item, expected_found=False)
         self._read(deleted_item['children'][0], expected_found=False)
         self._read(deleted_item['children'][1], expected_found=False)
-        self._read(self._items[0], exclude={
-            deleted_item['id'], deleted_item['children'][0]['id'], deleted_item['children'][1]['id']
-        })
+        self._read(self._items[0])
 
-        self._delete(self._items[0]['id'])
-        self._read(self._items[0], expected_found=False)
-        self._read(self._items[0]['children'][0], expected_found=False)
-        self._delete(data, expected_found=False)
+        deleted_item = self._items.pop(0)
+        self._delete(deleted_item['id'])
+        self._read(deleted_item, expected_found=False)
+        self._read(deleted_item['children'][0], expected_found=False)
 
     def test_update_type(self):
         # can't change type for existing item
