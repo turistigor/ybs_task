@@ -142,20 +142,18 @@ class PricesComparatorView(View):
         ''')
 
     def _get_items(self, children, node_id):
+        node_item = self._get_node_item(children, node_id)
 
-        items_map = self._get_items_map(children, node_id)
-
-        node_item = items_map.get(node_id, None)
         if node_item and node_item['type'] == 'CATEGORY':
-            self._calc_categories_prices(node_item, items_map)
+            self._calc_categories_prices(node_item)
 
         return node_item
 
-    def _get_items_map(self, children, node_id):
+    def _get_node_item(self, children, node_id):
         items_map = {}
 
         if len(children) == 1 and not children[0].parent_id:
-            items_map[node_id] = self._model_to_dict(children[0])
+            return self._model_to_dict(children[0])
 
         for child in children:
             child_dict = self._model_to_dict(child)
@@ -176,9 +174,9 @@ class PricesComparatorView(View):
                 child_dict = parent_dict
                 parent = parent.parent_id
 
-        return items_map
+        return items_map.get(node_id, None)
 
-    def _calc_categories_prices(self, node_item, items_map):
+    def _calc_categories_prices(self, node_item):
         price = 0
         offers_count = 0
 
@@ -187,7 +185,7 @@ class PricesComparatorView(View):
                 offers_count += 1
                 price += child['price']
             if child['type'] == 'CATEGORY':
-                cat_offers_count, cat_price_sum = self._calc_categories_prices(child, items_map)
+                cat_offers_count, cat_price_sum = self._calc_categories_prices(child)
                 price += cat_price_sum
                 offers_count += cat_offers_count
 

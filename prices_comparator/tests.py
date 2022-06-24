@@ -479,7 +479,15 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                     'date': cls.DATE_TIME_WITH_TZ,
                     'children': [],
                 }],
-            }]
+            }],
+        }, {
+            'id': '11111111-1111-1111-1111-111111111118',
+            'parentId': None,
+            'name': 'Фрукты',
+            'price': None,
+            'type': 'CATEGORY',
+            'date': cls.DATE_TIME_WITH_TZ,
+            'children': []
         }]
 
     def flatten(self, items, res=None):
@@ -548,6 +556,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         #create
         self._create(data)
         self._read(self._items[0])
+        self._read(self._items[1])
 
         #update
         self._items[0].update(name=self._items[0]['name'] + '!!!')
@@ -572,6 +581,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self._read(deleted_item['children'][1], expected_found=False)
         self._read(self._items[0])
 
+        self._delete(self._items[1]['id'])
         deleted_item = self._items.pop(0)
         self._delete(deleted_item['id'])
         self._read(deleted_item, expected_found=False)
