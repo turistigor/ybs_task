@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.test import TestCase
 from django.utils.dateparse import parse_datetime
 
@@ -42,6 +43,7 @@ class HttpMixin:
 
 class TestCommonMixin:
     DATE_TIME_WITH_TZ = '2022-05-28T21:12:01.000Z'
+    DATE_TIME_WITH_OFFSET = '2022-06-24T15:44:39.423258+00:00'
 
     normal_item = {
         'id': '3fa85f64-5717-4562-b3fc-2c963f66a444',
@@ -559,9 +561,19 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         self._read(self._items[1])
 
         #update
-        self._items[0].update(name=self._items[0]['name'] + '!!!')
-        data['items'] = self.flatten(self._items)
-        self._create(data)
+        self._items[0].update(
+            name=self._items[0]['name'] + '!!!', date=self.DATE_TIME_WITH_OFFSET
+        )
+        self._create({
+            'items': [{
+                'id': self._items[0]['id'], 
+                'type': self._items[0]['type'], 
+                'parentId':self._items[0]['parentId'], 
+                'name':self._items[0]['name'],
+                'price':None
+            }],
+            'updateDate': self._items[0]['date']
+        })
         self._read(self._items[0])
 
         #delete
