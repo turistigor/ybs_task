@@ -120,25 +120,64 @@ class PricesComparatorView(View):
         return node_form.cleaned_data['id']
 
     def _get_node_json(self, node_id):
-        node_model = ImportModel.objects.get(id=node_id)
-        item = self._model_to_dict(node_model)
-        return json.dumps(item)
+        children = ImportModel.objects.raw(f'''WITH RECURSIVE node(id, parent_id_id, type) AS (
+                SELECT id, parent_id_id, type FROM prices_comparator_importmodel
+                WHERE id='{node_id}'
+            UNION ALL
+                SELECT ch.id, ch.parent_id_id, ch.type
+                FROM prices_comparator_importmodel AS ch, node AS n
+                WHERE n.id = ch.parent_id_id)
+            SELECT * FROM node WHERE "type"='OFFER' ORDER BY parent_id_id, type
+        ''')
 
-    def _model_to_dict(self, node):
-        children = [
-            self._model_to_dict(child) for child in self._get_node_children(node)
-        ]
+        items = []
+        items_map = {}
+        for child in children:
 
-        d = model_to_dict(node)
-        d['children'] = children
+            child_dict = self._stringify(model_to_dict(child))
+            parent = child.parent_id
+            if not parent: 
+                items.append(child_dict)
+                continue
 
-        return self._stringify(d)
+            parent_dict = None
+            while parent:
+                try:
+                    parent_dict = items_map[str(parent.id)]
+                except KeyError:
+                    parent_dict = self._stringify(model_to_dict(parent))
+                    parent_dict['children'] = [child_dict]
+                    items_map[parent_dict['id']] = parent_dict
+                else:
+                    parent_dict['children'].append(child_dict)
+                    break
 
-    @staticmethod
-    def _get_node_children(node):
-        if node.type == 'CATEGORY':
-            return (child for child in node.importmodel_set.all())
-        return []
+                child_dict = parent_dict
+                parent = parent.parent_id
+            else:
+                items.append(child_dict)
+
+        print(items)
+
+    #     node_model = ImportModel.objects.get(id=node_id)
+    #     item = self._model_to_dict(node_model)
+    #     return json.dumps(item)
+
+    # def _model_to_dict(self, node):
+    #     children = [
+    #         self._model_to_dict(child) for child in self._get_node_children(node)
+    #     ]
+
+    #     d = model_to_dict(node)
+    #     d['children'] = children
+
+    #     return self._stringify(d)
+
+    # @staticmethod
+    # def _get_node_children(node):
+    #     if node.type == 'CATEGORY':
+    #         return (child for child in node.importmodel_set.all())
+    #     return []
 
     @staticmethod
     def _stringify(d):
