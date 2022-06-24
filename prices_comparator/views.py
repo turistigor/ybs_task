@@ -121,7 +121,7 @@ class PricesComparatorView(View):
 
     def _get_node_json(self, node_id):
         children = self._get_node_children(node_id)
-        item = self._get_items(children)
+        item = self._get_items(children, str(node_id))
         if item:
             return json.dumps(item)
         else:
@@ -137,12 +137,15 @@ class PricesComparatorView(View):
                 WHERE n.id = ch.parent_id_id)
             SELECT * FROM node AS n1 WHERE n1.id NOT IN (
                 SELECT DISTINCT n2.parent_id_id
-                FROM node AS n2 wHERE parent_id_id IS NOT NULL)
+                FROM node AS n2 WHERE parent_id_id IS NOT NULL)
         ''')
 
-    def _get_items(self, children):
+    def _get_items(self, children, node_id):
+
+        if len(children) == 1 and not children[0].parent_id:
+            return self._model_to_dict(children[0])
+
         items_map = {}
-        res = None
         for child in children:
 
             child_dict = self._model_to_dict(child)
@@ -162,10 +165,8 @@ class PricesComparatorView(View):
 
                 child_dict = parent_dict
                 parent = parent.parent_id
-            else: 
-                res = child_dict
 
-        return res
+        return items_map.get(node_id, None)
 
     @staticmethod
     def _model_to_dict(model):
@@ -184,6 +185,7 @@ class PricesComparatorView(View):
             d['children'] = None
         elif d['type'] == 'CATEGORY':
             d['children'] = []
+            # d['price'] = None
 
         return d
 
