@@ -1,4 +1,3 @@
-from datetime import datetime
 import math
 from django.views import View
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
@@ -205,7 +204,8 @@ class PricesComparatorView(View):
         parent_id = d.pop('parent_id')
         d['parentId'] = str(parent_id) if parent_id else None
 
-        d['date'] = datetime.isoformat(d['date'])
+        d['date'] = d['date'].isoformat(timespec='milliseconds')
+        d['date'] = d['date'].replace('+00:00', 'Z')
 
         if d['type'] == 'OFFER':
             d['children'] = None
