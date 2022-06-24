@@ -42,7 +42,6 @@ class HttpMixin:
 
 class TestCommonMixin:
     DATE_TIME_WITH_TZ = '2022-05-28T21:12:01.000Z'
-    DATE_TIME_WITH_OFFSET = '20022-10-25T14:30+02:00'
 
     normal_item = {
         'id': '3fa85f64-5717-4562-b3fc-2c963f66a444',
@@ -53,14 +52,25 @@ class TestCommonMixin:
     }
 
     _validation_failed = {
-        "code": 400,
-        "message": "Validation Failed"
+        'code': 400,
+        'message': 'Validation Failed'
+    }
+
+    _item_not_found = {
+        'code': 404,
+        'message': 'Item not found'
     }
 
     def check_validation_failed(self, resp):
         self.assertEqual(resp.status_code, 400)
         self.assertDictEqual(
             json.loads(resp.content.decode()), self._validation_failed
+        )
+
+    def check_item_not_found(self, resp):
+        self.assertEqual(resp.status_code, 404)
+        self.assertDictEqual(
+            json.loads(resp.content.decode()), self._item_not_found
         )
 
 
@@ -307,14 +317,14 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
         self.check_validation_failed(resp)
 
     def test_price(self):
-        # price is nan
+        # price is nan for offer
         data = {
             'updateDate': self.DATE_TIME_WITH_TZ,
             'items': [{
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': 'OFFER',
                     'price': 'sd',
                 },
                 self.normal_item
@@ -323,7 +333,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
 
-        # price is negative
+        # price is negative for offer
         data = {
             'updateDate': self.DATE_TIME_WITH_TZ,
             'items': [{
@@ -419,12 +429,13 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             'name': 'Продукты',
             'parentId': None,
             'type': 'CATEGORY',
+            'price': 52,
             'date': cls.DATE_TIME_WITH_TZ,
             'children': [{
                 'id': '11111111-1111-1111-1111-111111111112',
                 'parentId': '11111111-1111-1111-1111-111111111111',
                 'name': 'Овощи',
-                'price': None,
+                'price': 52,
                 'type': 'CATEGORY',
                 'date': cls.DATE_TIME_WITH_TZ,
                 'children': [{
@@ -439,7 +450,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '11111111-1111-1111-1111-111111111114',
                     'parentId': '11111111-1111-1111-1111-111111111112',
                     'name': 'Подовощи',
-                    'price':  None,
+                    'price':  72,
                     'type': 'CATEGORY',
                     'date': cls.DATE_TIME_WITH_TZ,
                     'children': [{
@@ -459,6 +470,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                         'date': cls.DATE_TIME_WITH_TZ,
                         'children': [],
                     }],
+                },{
+                    'id': '11111111-1111-1111-1111-111111111117',
+                    'parentId': '11111111-1111-1111-1111-111111111112',
+                    'name': 'Почти_овощи',
+                    'price': None,
+                    'type': 'CATEGORY',
+                    'date': cls.DATE_TIME_WITH_TZ,
+                    'children': [],
                 }],
             }]
         }]
@@ -467,9 +486,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         res = res or []
         for item in items:
             citem = copy.deepcopy(item)
+
+            if citem['type'] == 'CATEGORY':
+                citem['price'] = None
+
             if 'children' in citem:
                 res = self.flatten(citem['children'], res)
-                del citem['children']
+                citem.pop('children')
+
             res.append(citem)
         return res
 
@@ -493,13 +517,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             parse_datetime(saved_obj['date']), parse_datetime(item['date'])
         )
         self.assertEqual('children' in saved_obj, 'children' in item)
-        for saved_child in saved_obj['children']:
-            for item_child in item['children']:
-                if item_child['id'] == saved_child['id']:
-                    self._assert_node(item_child, saved_child)
-                    break
-            else:
-                self.assertEqual(True, False, f"{saved_child['id']}")
+        if item.get('children', None):
+            for saved_child in saved_obj['children']:
+                for item_child in item['children']:
+                    if item_child['id'] == saved_child['id']:
+                        self._assert_node(item_child, saved_child)
+                        break
+                else:
+                    self.assertEqual(True, False, f"{saved_child['id']}")
 
     def _read(self, item, expected_found=True):
         resp = self._send_nodes_get(item['id'])
@@ -508,14 +533,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             saved_obj = json.loads(resp.content.decode())
             self._assert_node(item, saved_obj)
         else:
-            self.assertEqual(resp.status_code, 404)
+            self.check_item_not_found(resp)
 
     def _delete(self, item_id, expected_found=True):
         resp = self._send_nodes_delete(item_id)
         if expected_found:
             self.assertEqual(resp.status_code, 200)
         else:
-            self.assertEqual(resp.status_code, 404)
+            self.check_item_not_found(resp)
 
     def test_CRUD(self):
         data = self._get_crud_data()
@@ -533,11 +558,15 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         #delete
         deleted_item = self._items[0]['children'][0]['children'].pop(0)
         self._delete(deleted_item['id'])
+        self._items[0]['price'] = 72
+        self._items[0]['children'][0]['price'] = 72
         self._read(deleted_item, expected_found=False)
         self._read(self._items[0])
 
         deleted_item = self._items[0]['children'][0]['children'].pop(0)
         self._delete(deleted_item['id'])
+        self._items[0]['price'] = None
+        self._items[0]['children'][0]['price'] = None
         self._read(deleted_item, expected_found=False)
         self._read(deleted_item['children'][0], expected_found=False)
         self._read(deleted_item['children'][1], expected_found=False)

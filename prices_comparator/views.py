@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 from django.views import View
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.forms import ValidationError
@@ -120,44 +121,106 @@ class PricesComparatorView(View):
         return node_form.cleaned_data['id']
 
     def _get_node_json(self, node_id):
-        node_model = ImportModel.objects.get(id=node_id)
-        item = self._model_to_dict(node_model)
-        return json.dumps(item)
+        children = self._get_node_children(node_id)
+        item = self._get_items(children, str(node_id))
+        if item:
+            return json.dumps(item)
+        else:
+            raise ImportModel.DoesNotExist
 
-    def _model_to_dict(self, node):
-        children = [
-            self._model_to_dict(child) for child in self._get_node_children(node)
-        ]
+    def _get_node_children(self, node_id):
+        return ImportModel.objects.raw(f'''WITH RECURSIVE node(id, parent_id_id, type) AS (
+                SELECT id, parent_id_id, type FROM prices_comparator_importmodel
+                WHERE id='{node_id}'
+            UNION ALL
+                SELECT ch.id, ch.parent_id_id, ch.type
+                FROM prices_comparator_importmodel AS ch, node AS n
+                WHERE n.id = ch.parent_id_id)
+            SELECT * FROM node AS n1 WHERE n1.id NOT IN (
+                SELECT DISTINCT n2.parent_id_id
+                FROM node AS n2 WHERE parent_id_id IS NOT NULL)
+        ''')
 
-        d = model_to_dict(node)
-        d['children'] = children
+    def _get_items(self, children, node_id):
 
-        return self._stringify(d)
+        items_map = self._get_items_map(children, node_id)
+
+        node_item = items_map.get(node_id, None)
+        if node_item and node_item['type'] == 'CATEGORY':
+            self._calc_categories_prices(node_item, items_map)
+
+        return node_item
+
+    def _get_items_map(self, children, node_id):
+        items_map = {}
+
+        if len(children) == 1 and not children[0].parent_id:
+            items_map[node_id] = self._model_to_dict(children[0])
+
+        for child in children:
+            child_dict = self._model_to_dict(child)
+            parent = child.parent_id
+
+            parent_dict = None
+            while parent:
+                try:
+                    parent_dict = items_map[str(parent.id)]
+                except KeyError:
+                    parent_dict = self._model_to_dict(parent)
+                    parent_dict['children'] = [child_dict]
+                    items_map[parent_dict['id']] = parent_dict
+                else:
+                    parent_dict['children'].append(child_dict)
+                    break
+
+                child_dict = parent_dict
+                parent = parent.parent_id
+
+        return items_map
+
+    def _calc_categories_prices(self, node_item, items_map):
+        price = 0
+        offers_count = 0
+
+        for child in node_item['children']:
+            if child['type'] == 'OFFER':
+                offers_count += 1
+                price += child['price']
+            if child['type'] == 'CATEGORY':
+                cat_offers_count, cat_price_sum = self._calc_categories_prices(child, items_map)
+                price += cat_price_sum
+                offers_count += cat_offers_count
+
+        if offers_count:
+            node_item['price'] = math.floor(price / offers_count)
+
+        return offers_count, price
 
     @staticmethod
-    def _get_node_children(node):
-        if node.type == 'CATEGORY':
-            return (child for child in node.importmodel_set.all())
-        return []
-
-    @staticmethod
-    def _stringify(d):
+    def _model_to_dict(model):
         ''' some fields are converted to strings to become jsonable '''
+
+        d = model_to_dict(model)
+
         d['id'] = str(d['id'])
-        try:
-            parent_id = d['parent_id']
-            d['parentId'] = str(d['parent_id']) if parent_id else None
-            del d['parent_id']
-        except KeyError:
-            pass
+
+        parent_id = d.pop('parent_id')
+        d['parentId'] = str(parent_id) if parent_id else None
 
         d['date'] = datetime.isoformat(d['date'])
 
+        if d['type'] == 'OFFER':
+            d['children'] = None
+        elif d['type'] == 'CATEGORY':
+            d['children'] = []
+            d['price'] = None
+
         return d
+
 
     @staticmethod
     def _delete_node(node_id):
-        res = ImportModel.objects.filter(id=node_id).delete()
-        if not res[0]:
+        deleted_count, __ = ImportModel.objects.get(id=node_id).delete()
+        if not deleted_count:
             raise ImportModel.DoesNotExist()
 
