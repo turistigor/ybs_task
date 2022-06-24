@@ -470,6 +470,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                         'date': cls.DATE_TIME_WITH_TZ,
                         'children': [],
                     }],
+                },{
+                    'id': '11111111-1111-1111-1111-111111111117',
+                    'parentId': '11111111-1111-1111-1111-111111111112',
+                    'name': 'Почти_овощи',
+                    'price': None,
+                    'type': 'CATEGORY',
+                    'date': cls.DATE_TIME_WITH_TZ,
+                    'children': [],
                 }],
             }]
         }]
