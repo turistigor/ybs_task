@@ -135,7 +135,9 @@ class PricesComparatorView(View):
                 SELECT ch.id, ch.parent_id_id, ch.type
                 FROM prices_comparator_importmodel AS ch, node AS n
                 WHERE n.id = ch.parent_id_id)
-            SELECT * FROM node WHERE "type"='OFFER' OR id <> parent_id_id
+            SELECT * FROM node AS n1 WHERE n1.id NOT IN (
+                SELECT DISTINCT n2.parent_id_id
+                FROM node AS n2 wHERE parent_id_id IS NOT NULL)
         ''')
 
     def _get_items(self, children):
