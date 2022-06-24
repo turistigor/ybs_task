@@ -493,13 +493,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             parse_datetime(saved_obj['date']), parse_datetime(item['date'])
         )
         self.assertEqual('children' in saved_obj, 'children' in item)
-        for saved_child in saved_obj['children']:
-            for item_child in item['children']:
-                if item_child['id'] == saved_child['id']:
-                    self._assert_node(item_child, saved_child)
-                    break
-            else:
-                self.assertEqual(True, False, f"{saved_child['id']}")
+        if item.get('children', None):
+            for saved_child in saved_obj['children']:
+                for item_child in item['children']:
+                    if item_child['id'] == saved_child['id']:
+                        self._assert_node(item_child, saved_child)
+                        break
+                else:
+                    self.assertEqual(True, False, f"{saved_child['id']}")
 
     def _read(self, item, expected_found=True):
         resp = self._send_nodes_get(item['id'])
