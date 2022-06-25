@@ -36,13 +36,10 @@ class ListField(forms.MultipleChoiceField):
         if not values:
             return []
         elif not isinstance(values, (list, tuple)):
-            raise ValidationError(
-                self.error_messages["invalid_list"], code="invalid_list"
-            )
+            raise ValidationError('items field is not a sequence')
         return values
 
     def validate(self, value):
-
         if self.required and not value:
             raise ValidationError(
                 self.error_messages["required"], code="required"
@@ -63,11 +60,12 @@ class ListField(forms.MultipleChoiceField):
         self.all_ids = set(self.local_ids)
         for item in self.local_ids.values():
             try:
-                parent = self.local_ids.get(item['parentId'], None)
+                parent_id = item.get('parentId', None)
+                parent = self.local_ids.get(parent_id, None)
                 if parent and parent['type'] != 'CATEGORY':
                     raise ValidationError('Only CATEGORY can be a parent')
-
-                self.all_ids.add(item['parentId'])
+                if parent_id:
+                    self.all_ids.add(parent_id)
             except KeyError:
                 continue
 
