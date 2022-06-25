@@ -54,13 +54,8 @@ class PricesComparatorView(View):
     def delete(self, request, *args, **kwargs):
         return self._process_node(request.method, kwargs['id'])
 
-    @staticmethod
-    def _get_models_by_ids(ids):
-        return {
-            str(m.id): m for m in ImportModel.objects.filter(
-                id__in=ids
-            )
-        }
+    def _get_models_by_ids(self, ids):
+        return {str(m.id): m for m in self._get_nodes_parents(ids)}
 
     def _save_model_with_parents(self, item, ids, db_ids, update_date):
         parent_model = self._get_parent_model(item, ids, db_ids, update_date)
@@ -68,7 +63,7 @@ class PricesComparatorView(View):
         self._check_item_integrity(parent_model, item['type'], model_type)
 
         m = ImportModel(
-            id=item['id'], name=item['name'], parent_id=parent_model, 
+            id=item['id'], name=item['name'], parent_id=parent_model,
             type=item['type'], price=item.get('price', None), date=update_date
         )
         m.save()
@@ -126,6 +121,16 @@ class PricesComparatorView(View):
             return json.dumps(item)
         else:
             raise ImportModel.DoesNotExist
+
+    def _get_nodes_parents(self, ids):
+        return ImportModel.objects.raw(f'''WITH RECURSIVE node(id, parent_id_id, "type") AS (
+                SELECT id, parent_id_id, "type", "name" FROM prices_comparator_importmodel
+                WHERE id IN ({', '.join([f"'{str(i)}'" for i in ids])})
+            UNION ALL
+                SELECT ch.id, ch.parent_id_id, "ch"."type", "ch"."name" FROM prices_comparator_importmodel AS ch, node AS n
+                WHERE n.parent_id_id = ch.id)
+            SELECT DISTINCT * FROM node AS n
+        ''')
 
     def _get_node_children(self, node_id):
         return ImportModel.objects.raw(f'''WITH RECURSIVE node(id, parent_id_id, type) AS (
