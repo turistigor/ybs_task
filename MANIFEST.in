@@ -1,3 +1,4 @@
-include README.rst
+include README.md
 include requirements.txt
 include manage.py
+include ybs-web.service
