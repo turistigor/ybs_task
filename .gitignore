@@ -133,3 +133,7 @@ dmypy.json
 
 #postgresql
 .data/
+
+#unit test from yandex
+expected.json
+response.json
