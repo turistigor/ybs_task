@@ -42,7 +42,7 @@ class HttpMixin:
 
 class TestCommonMixin:
     DATE_TIME_WITH_TZ = '2022-05-28T21:12:01.000Z'
-    DATE_TIME_WITH_OFFSET = '2022-06-24T15:44:39.423258+00:00'
+    DATE_TIME_WITH_OFFSET = '2022-06-24T15:44:39.00000+00:00'
 
     normal_item = {
         'id': '3fa85f64-5717-4562-b3fc-2c963f66a444',
