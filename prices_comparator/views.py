@@ -43,6 +43,12 @@ class PricesComparatorView(View):
                     __, item = local_ids.popitem()
                     self._save_model_with_parents(item, local_ids, models, update_date)
 
+                for m in models.values():
+                    m.date = update_date
+
+                ImportModel.objects.bulk_update(models.values(), fields=('parent_id','name','price','date'))
+                ImportModel.objects.bulk_create(models.values(), ignore_conflicts=True)
+
         except (JSONDecodeError, IntegrityError, ValidationError, KeyError) as ex:
             return self._http_resp_bad_request
 
@@ -66,7 +72,6 @@ class PricesComparatorView(View):
             id=item['id'], name=item['name'], parent_id=parent_model,
             type=item['type'], price=item.get('price', None), date=update_date
         )
-        m.save()
 
         db_ids[item['id']] = m
         ids.pop(item['id'], None)
