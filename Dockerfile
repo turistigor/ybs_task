@@ -18,8 +18,6 @@ FROM snakepacker/python:3.8 as api
 
 COPY --from=builder /usr/share/python3/ybs_task /usr/share/python3/ybs_task
 
-COPY ybs-web.service /etc/systemd/system
-
 # make my app visible for django
 ENV PYTHONPATH "${PYTHONPATH}:/usr/share/python3/ybs_task/ybs_task"
 
