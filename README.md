@@ -1,30 +1,26 @@
 Yandex backend school вторая задача встепительного экзамена. Сервис сравнения цен.
 
-Развернуть приложение на удаленном сервере:
-    необходимо установить:
+Как развернуть приложение на удаленном сервере:
+    установить:
         - docker
         - docker-compose
-    в директорию развертывания скачать https://github.com/turistigor/ybs_task/blob/main/docker-compose.yml
+    скопировать файлы:
+        https://disk.yandex.ru/d/qCBmMwC0PXsYog в /etc/systems/system
+        https://disk.yandex.ru/d/Hk_xBGLwUdHhcA в директорию развертывания
     выполнить команды:
         docker pull igorturist/ybs_task:0.1.0
         docker-compose up db&  # необходимо дождаться сообщения: "database ready to accept connections"
         docker-compose up migration
         docker-compose up web
 
-Обновить и перезапустить приложение:
+Для обновления приложения выполнить команды:
     docker-compose down
     docker pull igorturist/ybs_task:0.1.0
     docker-compose up db&  # необходимо дождаться сообщения: "database ready to accept connections"
     docker-compose up migration
     docker-compose up web
 
- Тесты:
-    Протестровать со своей машины приложение, развернуте на удаленом сервере:
-        скачать файл в любую удобную директорию https://github.com/turistigor/ybs_task/blob/main/docker-compose.yml
-        docker pull igorturist/ybs_task:0.1.0
-        docker compose up test_remote
-
-    Запустить тесты на удаленном сервере, где развенуто приложение:
-        cd <app_dir>
-        docker-compose up web&
-        docker compose up test
+Для запуска тестов выполнить команды:
+    развернуть приложение
+    docker-compose up web&
+    docker compose up test
