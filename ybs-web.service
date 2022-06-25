@@ -6,7 +6,7 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=true
-WorkingDirectory=/home/igor/back_school/ybs_task/
+WorkingDirectory=/home/ubuntu/ybs_task/
 ExecStart=/usr/local/bin/docker-compose up -d --remove-orphans web
 ExecStop=/usr/local/bin/docker-compose down
 
