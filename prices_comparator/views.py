@@ -47,8 +47,10 @@ class PricesComparatorView(View):
                 for m in models.values():
                     m.date = update_date
 
-                ImportModel.objects.bulk_update(models.values(), fields=('parent_id','name','price','date'))
-                ImportModel.objects.bulk_create(models.values(), ignore_conflicts=True)
+                ImportModel.objects.bulk_update_or_create(
+                    models.values(), ('parent_id','name','price','date'),
+                    match_field='id'
+                )
 
         except (JSONDecodeError, IntegrityError, ValidationError, KeyError) as ex:
             return self._http_resp_bad_request
