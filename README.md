@@ -5,12 +5,12 @@
     - docker
     - docker-compose
 2. скопировать файл https://disk.yandex.ru/d/Hk_xBGLwUdHhcA в директорию развертывания
-3. создать в директории развертывания файл .env с переменными окружениями в формате <name>=<value>:
-    - POSTGRES_DB=<database_name>
-    - POSTGRES_USER=<database_user_name>
-    - POSTGRES_PASSWORD=<database_user_password>
-    - DB_HOST=<database_addres> - контейнер ("db"), IP("127.0.0.1") или доменное имя(localhost), по умолчанию подразумевается значение "db".
-    - WEB_HOST=<tested_application_addres> - контейнер с протоколом ("http://web"), IP или доменное имя; для проверки локально развернутого приложения используйте "http://web"
+3. создать в директории развертывания файл .env с переменными окружениями в формате *name*=*value*:
+    - POSTGRES_DB=*<database_name>*
+    - POSTGRES_USER=*<database_user_name>*
+    - POSTGRES_PASSWORD=*<database_user_password>*
+    - DB_HOST=*<database_addres>* - контейнер ("db"), IP("127.0.0.1") или доменное имя(localhost), по умолчанию подразумевается значение "db".
+    - WEB_HOST=*<tested_application_addres>* - контейнер с протоколом ("http://web"), IP или доменное имя; для проверки локально развернутого приложения используйте "http://web"
 4. выполнить команды:
 ```
 docker pull igorturist/ybs_task:0.1.0
