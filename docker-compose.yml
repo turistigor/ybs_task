@@ -13,7 +13,7 @@ services:
      - 5432:5432
 
   migration:
-    image: igorturist/ybs_task:0.1.0
+    image: igorturist/ybs_task:latest
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 db:5432 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py migrate
     env_file:
       - .env
@@ -24,7 +24,7 @@ services:
 
   web:
     build: .
-    image: igorturist/ybs_task:0.1.0
+    image: igorturist/ybs_task:latest
     restart: always
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 migration:8001 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
     env_file:
@@ -35,7 +35,7 @@ services:
       - migration
 
   test:
-    image: igorturist/ybs_task:0.1.0
+    image: igorturist/ybs_task:latest
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 web:80 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
     env_file:
       - .env

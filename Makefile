@@ -1,6 +1,6 @@
 PROJECT_NAME ?= ybs_task
 PROJECT_REGISTRY = igorturist
-VERSION = $(shell python3 setup.py --version | tr '+' '-')
+VERSION = latest
 
 
 local_clean:

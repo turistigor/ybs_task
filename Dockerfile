@@ -13,7 +13,6 @@ RUN /usr/share/python3/ybs_task/bin/pip install /mnt/dist/* \
     --target /usr/share/python3/ybs_task/ybs_task \
     && /usr/share/python3/ybs_task/bin/pip check
 
-
 FROM snakepacker/python:3.8 as api
 
 COPY --from=builder /usr/share/python3/ybs_task /usr/share/python3/ybs_task

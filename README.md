@@ -13,14 +13,14 @@
     - WEB_HOST=*<tested_application_addres>* - контейнер с протоколом ("http://web"), IP или доменное имя; для проверки локально развернутого приложения используйте "http://web"
 4. выполнить команды:
 ```
-docker pull igorturist/ybs_task:0.1.0
+docker pull igorturist/ybs_task:latest
 docker-compose up web
 ```
 
 **Для обновления приложения выполнить команды:**
 ```
 docker-compose down
-docker pull igorturist/ybs_task:0.1.0
+docker pull igorturist/ybs_task:latest
 docker-compose up web
 ```
 
