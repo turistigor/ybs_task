@@ -4,6 +4,7 @@ services:
 
   db:
     image: postgres
+    restart: always
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
@@ -27,7 +28,7 @@ services:
   web:
     build: .
     image: igorturist/ybs_task:0.1.0
-    # restart: always
+    restart: always
     command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
     environment:
       - POSTGRES_DB=p_db

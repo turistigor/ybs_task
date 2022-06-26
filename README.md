@@ -5,7 +5,6 @@ Yandex backend school вторая задача встепительного э�
         - docker
         - docker-compose
     скопировать файлы:
-        https://disk.yandex.ru/d/qCBmMwC0PXsYog в /etc/systems/system
         https://disk.yandex.ru/d/Hk_xBGLwUdHhcA в директорию развертывания
     выполнить команды:
         docker pull igorturist/ybs_task:0.1.0
