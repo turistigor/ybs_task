@@ -31,11 +31,3 @@ docker_upload: docker_rebuild
 	docker tag $(PROJECT_NAME):$(VERSION) $(PROJECT_REGISTRY)/$(PROJECT_NAME):$(VERSION)
 	docker push $(PROJECT_REGISTRY)/$(PROJECT_NAME):$(VERSION)
 
-dc_up: dc_down local_sdist
-	docker-compose up -d --build
-
-dc_up_web: dc_down local_sdist
-	docker-compose up -d --build web
-
-dc_down:
-	docker-compose down

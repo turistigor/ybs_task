@@ -1,5 +1,7 @@
 # Сервис сравнения цен
 
+## Развернуть и обновить
+
 **Как развернуть приложение на сервере:**
 1. установить:
     - docker
@@ -24,9 +26,30 @@ docker pull igorturist/ybs_task:latest
 docker-compose up web
 ```
 
+## Разработка
+
 **Для запуска тестов выполнить команды:**
 1. развернуть приложение
 2. выполнить команду:
 ```
 docker compose up test
 ```
+**Полезные команды:**
+- local_clean удалить собранный python package
+- local_sdist собрать python package
+- local_install локально уствить python package
+- docker_build собрать контейнер
+- docker_clean удалить безымянные образы
+- docker_rebuild docker_clean + docker_clean
+- docker_run запустить контейнер на 80 порту
+- docker_rerun docker_rebuild + docker_run
+- docker_upload пересобрать и выложить контейнер на https://hub.docker.com/
+
+**Реализация:**
+- База данных: PostgreSQL
+- Web-фреймворк: Django 4.0.5
+- Связь Web-фреймворка и базы даных: psycopg2-binary 2.9.3
+- Тесты: Django Tests
+- Дополнительные библиотеки:
+    - requests 2.28.0
+    - django-bulk-update-or-create 0.3.0
