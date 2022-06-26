@@ -137,3 +137,6 @@ dmypy.json
 #unit test from yandex
 expected.json
 response.json
+
+# db credentials
+.env

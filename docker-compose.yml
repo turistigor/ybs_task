@@ -7,21 +7,16 @@ services:
     restart: always
     volumes:
       - ./data/db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=p_db
-      - POSTGRES_USER=p_user
-      - POSTGRES_PASSWORD=p_password
-    ports: 
+    env_file:
+      - .env
+    ports:
      - 5432:5432
 
   migration:
     image: igorturist/ybs_task:0.1.0
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 db:5432 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py migrate
-    environment:
-      - POSTGRES_DB=p_db
-      - POSTGRES_USER=p_user
-      - POSTGRES_PASSWORD=p_password
-      - DB_HOST=db
+    env_file:
+      - .env
     ports:
       - 8001:8001
     depends_on:
@@ -32,25 +27,17 @@ services:
     image: igorturist/ybs_task:0.1.0
     restart: always
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 migration:8001 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
-    environment:
-      - POSTGRES_DB=p_db
-      - POSTGRES_USER=p_user
-      - POSTGRES_PASSWORD=p_password
-      - DB_HOST=db
+    env_file:
+      - .env
     ports:
       - 80:80
     depends_on:
-      - db
       - migration
 
   test:
     image: igorturist/ybs_task:0.1.0
     command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 web:80 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
-    environment:
-      - POSTGRES_DB=p_db
-      - POSTGRES_USER=p_user
-      - POSTGRES_PASSWORD=p_password
-      - DB_HOST=db
-      - WEB_HOST=http://web
+    env_file:
+      - .env
     depends_on:
       - web
