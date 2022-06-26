@@ -16,8 +16,8 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-22y-!%9j4dj)pxq!%r59j3pwg)!v(e%*3ms=^_w_sn^_n98x(n'
+# Don't close connection to the db, sec
+CONN_MAX_AGE = 60
 
 ALLOWED_HOSTS = ['*']
 
