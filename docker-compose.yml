@@ -16,12 +16,14 @@ services:
 
   migration:
     image: igorturist/ybs_task:0.1.0
-    command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py migrate
+    command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 db:5432 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py migrate
     environment:
       - POSTGRES_DB=p_db
       - POSTGRES_USER=p_user
       - POSTGRES_PASSWORD=p_password
       - DB_HOST=db
+    ports:
+      - 8001:8001
     depends_on:
       - db
 
@@ -29,7 +31,7 @@ services:
     build: .
     image: igorturist/ybs_task:0.1.0
     restart: always
-    command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
+    command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 migration:8001 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py runserver '0.0.0.0:80'
     environment:
       - POSTGRES_DB=p_db
       - POSTGRES_USER=p_user
@@ -43,7 +45,7 @@ services:
 
   test:
     image: igorturist/ybs_task:0.1.0
-    command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
+    command: /usr/share/python3/ybs_task/wait-for-it.sh -t 4 web:80 -- python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
     environment:
       - POSTGRES_DB=p_db
       - POSTGRES_USER=p_user
@@ -52,15 +54,3 @@ services:
       - WEB_HOST=http://web
     depends_on:
       - web
-
-  test_remote:
-    image: igorturist/ybs_task:0.1.0
-    command: python3.8 /usr/share/python3/ybs_task/ybs_task/bin/manage.py test prices_comparator.tests
-    environment:
-      - POSTGRES_DB=p_db
-      - POSTGRES_USER=p_user
-      - POSTGRES_PASSWORD=p_password
-      - DB_HOST=db
-      - WEB_HOST=https://inkjet-1986.usr.yandex-academy.ru/
-    depends_on:
-      - db

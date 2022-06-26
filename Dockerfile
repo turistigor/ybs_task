@@ -19,6 +19,8 @@ FROM snakepacker/python:3.8 as api
 COPY --from=builder /usr/share/python3/ybs_task /usr/share/python3/ybs_task
 
 COPY wait-for-it.sh /usr/share/python3/ybs_task
+USER root
+RUN chmod ugo=rwx /usr/share/python3/ybs_task/wait-for-it.sh
 
 # make my app visible for django
 ENV PYTHONPATH "${PYTHONPATH}:/usr/share/python3/ybs_task/ybs_task"
