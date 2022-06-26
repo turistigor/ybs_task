@@ -2,6 +2,7 @@ import django.forms as forms
 from django.core.exceptions import ValidationError
 
 import prices_comparator.common as const
+from prices_comparator.common import ItemType
 
 
 class ImportItemForm(forms.Form):
@@ -17,10 +18,10 @@ class ImportItemForm(forms.Form):
         item_type = self.cleaned_data.get('type', None)
         price = self.cleaned_data.get('price', None)
 
-        if item_type == 'CATEGORY':
+        if item_type == ItemType.CATEGORY.value:
             if isinstance(price, int):
                 raise ValidationError(message='price for category isn\'t null')
-        elif item_type == 'OFFER':
+        elif item_type == ItemType.OFFER.value:
             if not isinstance(price, int) or price < 0:
                 raise ValidationError(message='invalid offer price')
 
@@ -62,8 +63,8 @@ class ListField(forms.MultipleChoiceField):
             try:
                 parent_id = item.get('parentId', None)
                 parent = self.local_ids.get(parent_id, None)
-                if parent and parent['type'] != 'CATEGORY':
-                    raise ValidationError('Only CATEGORY can be a parent')
+                if parent and parent['type'] != ItemType.CATEGORY.value:
+                    raise ValidationError(f'Only {ItemType.CATEGORY.value} can be a parent')
                 if parent_id:
                     self.all_ids.add(parent_id)
             except KeyError:

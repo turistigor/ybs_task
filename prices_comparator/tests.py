@@ -6,6 +6,8 @@ import json
 import os
 import copy
 
+from prices_comparator.common import ItemType
+
 
 class HttpMixin:
     def _send_imports_post(self, data):
@@ -48,7 +50,7 @@ class TestCommonMixin:
         'id': '3fa85f64-5717-4562-b3fc-2c963f66a444',
         'name': 'Оффер',
         'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-        'type': 'OFFER',
+        'type': ItemType.OFFER.value,
         'price': 234,
     }
 
@@ -112,7 +114,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
         data = {'updateDate': self.DATE_TIME_WITH_TZ, 'items': [{
             'name': 'Оффер',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-            'type': 'OFFER',
+            'type': ItemType.OFFER.value,
             'price': 234,
         },]}
         resp = self._send_imports_post(data)
@@ -125,7 +127,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': 'asdew83rnf c',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -141,7 +143,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -157,7 +159,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': None,
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -173,7 +175,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': self.normal_item['id'],
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -190,7 +192,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': 'asdew83rnf c',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -204,7 +206,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
         data = {'updateDate': self.DATE_TIME_WITH_TZ, 'items': [{
             'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
             'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-            'type': 'OFFER',
+            'type': ItemType.OFFER.value,
             'price': 234,
         },]}
         resp = self._send_imports_post(data)
@@ -217,7 +219,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 201*'a',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -233,7 +235,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': '',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -249,7 +251,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': None,
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 100,
                 },
                 self.normal_item
@@ -325,7 +327,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': 'sd',
                 },
                 self.normal_item
@@ -341,7 +343,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': -3,
                 },
                 self.normal_item
@@ -357,7 +359,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': None,
                 },
                 self.normal_item
@@ -373,7 +375,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'price': '',
                 },
                 self.normal_item
@@ -389,7 +391,7 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
                     'id': '3fa85f64-5717-4562-b3fc-2c963f66a333',
                     'name': 'Фрукт',
                     'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                    'type': 'CATEGORY',
+                    'type': ItemType.CATEGORY.value,
                     'price': 11,
                 },
                 self.normal_item
@@ -404,13 +406,13 @@ class ImportTest(TestCase, HttpMixin, TestCommonMixin):
             'items': [{
                 'id': '21111111-1111-1111-1111-111111111111',
                 'name': 'car',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 1002,
             },{
                 'id': '31111111-1111-1111-1111-111111111111',
                 'parentId': '21111111-1111-1111-1111-111111111111',
                 'name': 'wheel',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 10,
             }]
         }
@@ -429,7 +431,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             'id': '11111111-1111-1111-1111-111111111111',
             'name': 'Продукты',
             'parentId': None,
-            'type': 'CATEGORY',
+            'type': ItemType.CATEGORY.value,
             'price': 52,
             'date': cls.DATE_TIME_WITH_TZ,
             'children': [{
@@ -437,14 +439,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                 'parentId': '11111111-1111-1111-1111-111111111111',
                 'name': 'Овощи',
                 'price': 52,
-                'type': 'CATEGORY',
+                'type': ItemType.CATEGORY.value,
                 'date': cls.DATE_TIME_WITH_TZ,
                 'children': [{
                     'id': '11111111-1111-1111-1111-111111111113',
                     'parentId': '11111111-1111-1111-1111-111111111112',
                     'name': 'Огурцы',
                     'price': 11,
-                    'type': 'OFFER',
+                    'type': ItemType.OFFER.value,
                     'date': cls.DATE_TIME_WITH_TZ,
                     'children': [],
                 },{
@@ -452,14 +454,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                     'parentId': '11111111-1111-1111-1111-111111111112',
                     'name': 'Подовощи',
                     'price':  72,
-                    'type': 'CATEGORY',
+                    'type': ItemType.CATEGORY.value,
                     'date': cls.DATE_TIME_WITH_TZ,
                     'children': [{
                         'id': '11111111-1111-1111-1111-111111111115',
                         'parentId': '11111111-1111-1111-1111-111111111114',
                         'name': 'Помидоры',
                         'price': 114,
-                        'type': 'OFFER',
+                        'type': ItemType.OFFER.value,
                         'date': cls.DATE_TIME_WITH_TZ,
                         'children': [],
                     }, {
@@ -467,7 +469,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                         'parentId': '11111111-1111-1111-1111-111111111114',
                         'name': 'Морковь',
                         'price': 31,
-                        'type': 'OFFER',
+                        'type': ItemType.OFFER.value,
                         'date': cls.DATE_TIME_WITH_TZ,
                         'children': [],
                     }],
@@ -476,7 +478,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                     'parentId': '11111111-1111-1111-1111-111111111112',
                     'name': 'Почти_овощи',
                     'price': None,
-                    'type': 'CATEGORY',
+                    'type': ItemType.CATEGORY.value,
                     'date': cls.DATE_TIME_WITH_TZ,
                     'children': [],
                 }],
@@ -486,7 +488,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             'parentId': None,
             'name': 'Фрукты',
             'price': None,
-            'type': 'CATEGORY',
+            'type': ItemType.CATEGORY.value,
             'date': cls.DATE_TIME_WITH_TZ,
             'children': []
         }]
@@ -496,7 +498,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
         for item in items:
             citem = copy.deepcopy(item)
 
-            if citem['type'] == 'CATEGORY':
+            if citem['type'] == ItemType.CATEGORY.value:
                 citem['price'] = None
 
             if 'children' in citem:
@@ -606,14 +608,14 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                 'id': '1fa85f64-5717-4562-b3fc-2c963f66a333',
                 'name': 'Фрукт',
                 'parentId': '3fa85f64-5717-4562-b3fc-2c963f66a333',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 100,
             }]
         }
         resp = self._send_imports_post(data)
         self.assertEqual(resp.status_code, 200)
 
-        data['items'][0]['type'] = 'CATEGORY'
+        data['items'][0]['type'] = ItemType.CATEGORY.value
         data['items'][0]['price'] = None
         resp = self._send_imports_post(data)
         self.check_validation_failed(resp)
@@ -626,7 +628,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             'items': [{
                 'id': '21111111-1111-1111-1111-111111111111',
                 'name': 'car',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 1002,
             }]
         }
@@ -639,7 +641,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                 'id': '31111111-1111-1111-1111-111111111111',
                 'parentId': '21111111-1111-1111-1111-111111111111',
                 'name': 'wheel',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 10,
             }]
         }
@@ -654,13 +656,13 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
             'items': [{
                 'id': '21111111-1111-1111-1111-111111111111',
                 'name': 'car',
-                'type': 'CATEGORY',
+                'type': ItemType.CATEGORY.value,
                 'price': None
             }, {
                 'id': '31111111-1111-1111-1111-111111111111',
                 'parentId': '21111111-1111-1111-1111-111111111111',
                 'name': 'wheel',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 10,
             }]
         }
@@ -673,7 +675,7 @@ class IntegratedTest(TestCase, HttpMixin, TestCommonMixin):
                 'id': '31111111-1111-1111-1111-111111111111',
                 'parentId': None,
                 'name': 'whEEl',
-                'type': 'OFFER',
+                'type': ItemType.OFFER.value,
                 'price': 11,
             }]
         }

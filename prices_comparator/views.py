@@ -10,6 +10,7 @@ from json.decoder import JSONDecodeError
 
 from prices_comparator.import_forms import ImportForm, NodeForm
 from prices_comparator.models import ImportModel
+from prices_comparator.common import ItemType
 
 
 class PricesComparatorView(View):
@@ -88,7 +89,7 @@ class PricesComparatorView(View):
 
     @staticmethod
     def _check_item_integrity(parent_model, item_type, model_type):
-        if parent_model and parent_model.type != 'CATEGORY':
+        if parent_model and parent_model.type != ItemType.CATEGORY.value:
             raise IntegrityError('Only CATEGORY can be a parent')
         if model_type and item_type != model_type:
             raise IntegrityError('You can\'t change item type')
@@ -153,7 +154,7 @@ class PricesComparatorView(View):
     def _get_items(self, children, node_id):
         node_item = self._get_node_item(children, node_id)
 
-        if node_item and node_item['type'] == 'CATEGORY':
+        if node_item and node_item['type'] == ItemType.CATEGORY.value:
             self._calc_categories_prices(node_item)
 
         return node_item
@@ -190,10 +191,10 @@ class PricesComparatorView(View):
         offers_count = 0
 
         for child in node_item['children']:
-            if child['type'] == 'OFFER':
+            if child['type'] == ItemType.OFFER.value:
                 offers_count += 1
                 price += child['price']
-            if child['type'] == 'CATEGORY':
+            if child['type'] == ItemType.CATEGORY.value:
                 cat_offers_count, cat_price_sum = self._calc_categories_prices(child)
                 price += cat_price_sum
                 offers_count += cat_offers_count
@@ -217,9 +218,9 @@ class PricesComparatorView(View):
         d['date'] = d['date'].isoformat(timespec='milliseconds')
         d['date'] = d['date'].replace('+00:00', 'Z')
 
-        if d['type'] == 'OFFER':
+        if d['type'] == ItemType.OFFER.value:
             d['children'] = None
-        elif d['type'] == 'CATEGORY':
+        elif d['type'] == ItemType.CATEGORY.value:
             d['children'] = []
             d['price'] = None
 
